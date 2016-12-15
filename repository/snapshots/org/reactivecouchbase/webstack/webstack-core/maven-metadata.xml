@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>org.reactivecouchbase.webstack</groupId>
+  <artifactId>webstack-core</artifactId>
+  <versioning>
+    <versions>
+      <version>0.1.0-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20161215145513</lastUpdated>
+  </versioning>
+</metadata>

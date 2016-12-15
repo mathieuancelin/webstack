@@ -1,0 +1,30 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'idea'
+
+group = 'org.reactivecouchbase.webstack.examples'
+version = '1.0.0-SNAPSHOT'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+mainClassName = 'org.reactivecouchbase.webstrack.WebStack'
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://raw.github.com/ReactiveCouchbase/repository/master/snapshots/'
+    }
+    maven {
+        url '../repository/snapshots/'
+    }
+}
+
+dependencies {
+    compile("org.reactivecouchbase.webstack:webstack-core:0.1.0-SNAPSHOT")
+}
