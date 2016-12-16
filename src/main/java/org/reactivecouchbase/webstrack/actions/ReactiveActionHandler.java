@@ -19,13 +19,13 @@ import org.xnio.channels.StreamSinkChannel;
 import java.io.IOException;
 import java.util.concurrent.CompletionStage;
 
-public class ReactiveHttpHandler implements HttpHandler {
+public class ReactiveActionHandler implements HttpHandler {
 
-    static final Logger logger = LoggerFactory.getLogger(ReactiveHttpHandler.class);
+    static final Logger logger = LoggerFactory.getLogger(ReactiveActionHandler.class);
 
     private final ActionSupplier action;
 
-    public ReactiveHttpHandler(ActionSupplier action) {
+    public ReactiveActionHandler(ActionSupplier action) {
         this.action = action;
     }
 
@@ -34,7 +34,13 @@ public class ReactiveHttpHandler implements HttpHandler {
         // UndertowOptions
         exchange.setMaxEntitySize(Long.MAX_VALUE);
         exchange.dispatch(() -> {
+            if (exchange.isInIoThread()) {
+                logger.warn("Request processed in IO thread !!!!");
+            }
             action.get().run(exchange).andThen(resultTry -> {
+                if (exchange.isInIoThread()) {
+                    logger.warn("Request running in IO thread !!!!");
+                }
                 for (Result result : resultTry.asSuccess()) {
                     result.headers.forEach(tuple -> exchange.getResponseHeaders().putAll(HttpString.tryFromString(tuple._1), tuple._2.toJavaList()));
                     result.cookies.forEach(cookie -> exchange.getResponseCookies().put(cookie.getName(), cookie));

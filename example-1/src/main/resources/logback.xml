@@ -16,8 +16,7 @@
     <logger name="io.undertow.request" level="WARN"/>
     <logger name="org.reflections.Reflections" level="WARN"/>
     <logger name="com.github.jknack.handlebars.internal.HbsParserFactory" level="WARN"/>
-    <logger name="org.reactivecouchbase.webstrack.WebStack" level="TRACE" />
-    <logger name="org.reactivecouchbase.webstrack.actions.ReactiveActionHandler" level="TRACE" />
+    <logger name="org.reactivecouchbase.webstrack.WebStack" level="INFO" />
     <logger name="application" level="INFO" />
 
     <root level="ALL">

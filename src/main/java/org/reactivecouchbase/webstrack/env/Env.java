@@ -4,8 +4,11 @@ import akka.actor.ActorSystem;
 import akka.http.javadsl.Http;
 import akka.stream.ActorMaterializer;
 import com.typesafe.config.ConfigFactory;
+import org.reactivecouchbase.webstrack.WebStack;
 import org.reactivecouchbase.webstrack.config.Configuration;
 import org.reactivecouchbase.webstrack.utils.FakeExecutorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 
@@ -44,6 +47,11 @@ public class Env {
         }));
     }
 
+    private static final Logger APP_LOGGER = LoggerFactory.getLogger("application");
+
+    public static Logger logger() {
+        return APP_LOGGER;
+    }
 
     public static Configuration configuration() {
         return DEFAULT;

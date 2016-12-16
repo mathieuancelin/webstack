@@ -14,6 +14,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 mainClassName = 'org.reactivecouchbase.webstrack.WebStack'
+applicationDefaultJvmArgs = ["-Dwebstack.port=7001"]
 
 repositories {
     mavenCentral()

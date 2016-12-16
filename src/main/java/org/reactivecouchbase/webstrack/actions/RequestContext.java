@@ -17,6 +17,8 @@ import org.reactivecouchbase.webstrack.config.Configuration;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscription;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.function.BiFunction;
 
@@ -67,6 +69,70 @@ public class RequestContext {
         } else {
             return new RequestContext(state.put(key, value), httpServerExchange, ec);
         }
+    }
+
+    public String uri() {
+        return exchange().getRequestURI();
+    }
+
+    public String method() {
+        return exchange().getRequestMethod().toString();
+    }
+
+    public String chartset() {
+        return exchange().getRequestCharset();
+    }
+
+    public Long contentLength() {
+        return exchange().getRequestContentLength();
+    }
+
+    public String path() {
+        return exchange().getRequestPath();
+    }
+
+    public String scheme() {
+        return exchange().getRequestScheme();
+    }
+
+    public long startTime() {
+        return exchange().getRequestStartTime();
+    }
+
+    public String url() {
+        return exchange().getRequestURL();
+    }
+
+    public String hostAndPort() {
+        return exchange().getHostAndPort();
+    }
+
+    public String hostName() {
+        return exchange().getHostName();
+    }
+
+    public int port() {
+        return exchange().getHostPort();
+    }
+
+    public String protocol() {
+        return exchange().getProtocol().toString();
+    }
+
+    public String queryString() {
+        return exchange().getQueryString();
+    }
+
+    public String relativePath() {
+        return exchange().getRelativePath();
+    }
+
+    public InetSocketAddress sourceAddress() {
+        return exchange().getSourceAddress();
+    }
+
+    public int status() {
+        return exchange().getStatusCode();
     }
 
     public HttpServerExchange exchange() {

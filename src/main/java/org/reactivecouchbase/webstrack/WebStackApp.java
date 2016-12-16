@@ -3,7 +3,7 @@ package org.reactivecouchbase.webstrack;
 import akka.http.javadsl.model.HttpMethod;
 import io.undertow.server.RoutingHandler;
 import org.reactivecouchbase.webstrack.actions.ActionSupplier;
-import org.reactivecouchbase.webstrack.actions.ReactiveHttpHandler;
+import org.reactivecouchbase.webstrack.actions.ReactiveActionHandler;
 import org.reactivecouchbase.webstrack.websocket.ReactiveWebSocketHandler;
 import org.reactivecouchbase.webstrack.websocket.WebSocketActionSupplier;
 
@@ -35,7 +35,7 @@ public abstract class WebStackApp {
     }
 
     public void route(HttpMethod method, String url, ActionSupplier action) {
-        routingHandler.add(method.name(), url, new ReactiveHttpHandler(action));
+        routingHandler.add(method.name(), url, new ReactiveActionHandler(action));
     }
 
     public void route(HttpMethod method, String url, WebSocketActionSupplier action) {

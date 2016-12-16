@@ -9,8 +9,6 @@ import static akka.http.javadsl.model.HttpMethods.*;
 
 public class TestApplication {
 
-    static final Logger logger = LoggerFactory.getLogger(TestApplication.class);
-
     public static BootstrappedContext run() {
         return new WebStackApp() {{
 

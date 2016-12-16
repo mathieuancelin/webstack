@@ -54,6 +54,18 @@ public class WebSocketContext {
         }
     }
 
+    public String uri() {
+        return exchange().getRequestURI();
+    }
+
+    public String scheme() {
+        return exchange().getRequestScheme();
+    }
+
+    public String queryString() {
+        return exchange().getQueryString();
+    }
+
     public Option<String> header(String name) {
         return headers.header(name);
     }

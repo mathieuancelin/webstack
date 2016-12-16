@@ -7,7 +7,6 @@ import io.undertow.util.HttpString;
 import javaslang.collection.List;
 import org.reactivecouchbase.common.Throwables;
 import org.reactivecouchbase.json.Json;
-import org.reactivecouchbase.webstrack.config.Configuration;
 import org.reactivecouchbase.webstrack.env.Env;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -27,7 +26,7 @@ public class WebStack {
             .headOption()
             .map(serverClazz -> {
                 try {
-                    logger.info("Found WebStackApp class : " + serverClazz.getName());
+                    logger.info("Found WebStackApp class: " + serverClazz.getName());
                     WebStackApp context = serverClazz.newInstance();
                     return startWebStackApp(context);
                 } catch (Exception e) {
