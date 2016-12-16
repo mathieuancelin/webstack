@@ -15,7 +15,7 @@ public class HomeController {
 
     public static Action index() {
         return Action.sync(ctx ->
-                Ok.text("Hello World!\n")
+            Ok.text("Hello World!\n")
         );
     }
 
