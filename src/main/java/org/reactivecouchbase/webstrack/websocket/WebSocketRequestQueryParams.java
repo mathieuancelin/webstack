@@ -11,7 +11,7 @@ public class WebSocketRequestQueryParams {
     WebSocketRequestQueryParams(WebSocketHttpExchange request) {
         this.queryParams = Option.apply(request.getQueryString()).map(s -> s.replace("?", "")).map(s -> List.of(s.split("\\&"))).map(params -> {
             Map<String, List<String>> queryParams = HashMap.empty();
-            for (String param : params) {
+            for (String param : params.filter(e -> !e.trim().isEmpty())) {
                 String key = param.split("\\=")[0];
                 String value = param.split("\\=")[1];
                 if (queryParams.containsKey(key)) {

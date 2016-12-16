@@ -1,5 +1,8 @@
 package org.reactivecouchbase.webstrack.websocket;
 
+import akka.http.javadsl.model.ws.BinaryMessage;
+import akka.http.javadsl.model.ws.Message;
+import akka.http.javadsl.model.ws.TextMessage;
 import akka.stream.OverflowStrategy;
 import akka.stream.javadsl.Flow;
 import akka.stream.javadsl.Sink;
@@ -30,9 +33,9 @@ public class ReactiveWebSocketHandler implements WebSocketConnectionCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(ReactiveWebSocketHandler.class);
 
-    private final ConcurrentHashMap<String, SourceQueueWithComplete<WebSocketMessage>> connections = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, SourceQueueWithComplete<Message>> connections = new ConcurrentHashMap<>();
 
-    final Function<WebSocketContext, Future<Flow<WebSocketMessage, WebSocketMessage, ?>>> handler;
+    final Function<WebSocketContext, Future<Flow<Message, Message, ?>>> handler;
 
     public ReactiveWebSocketHandler(WebSocketActionSupplier supplier) {
         this.handler = supplier.get().handler;
@@ -44,8 +47,8 @@ public class ReactiveWebSocketHandler implements WebSocketConnectionCallback {
         String id = UUID.randomUUID().toString();
 
         try {
-            Source<WebSocketMessage, SourceQueueWithComplete<WebSocketMessage>> queue = Source.queue(50, OverflowStrategy.backpressure());
-            Future<Flow<WebSocketMessage, WebSocketMessage, ?>> flow = handler.apply(new WebSocketContext(
+            Source<Message, SourceQueueWithComplete<Message>> queue = Source.queue(50, OverflowStrategy.backpressure());
+            Future<Flow<Message, Message, ?>> flow = handler.apply(new WebSocketContext(
                 HashMap.empty(),
                 exchange,
                 channel,
@@ -53,14 +56,13 @@ public class ReactiveWebSocketHandler implements WebSocketConnectionCallback {
                 Env.websocketExecutor()
             ));
             flow.onSuccess(f -> {
-                SourceQueueWithComplete<WebSocketMessage> matQueue = queue
+                SourceQueueWithComplete<Message> matQueue = queue
                         .via(f)
                         .to(Sink.foreach(message -> {
-                            for (TextWebSocketMessage m : message.as(TextWebSocketMessage.class)) {
-                                WebSockets.sendText(m.payload(), channel, null);
-                            }
-                            for (BinaryWebSocketMessage m : message.as(BinaryWebSocketMessage.class)) {
-                                WebSockets.sendBinary(m.payload().asByteBuffer(), channel, null);
+                            if (message.isText()) {
+                                WebSockets.sendText(message.asTextMessage().getStrictText(), channel, null);
+                            } else {
+                                WebSockets.sendBinary(message.asBinaryMessage().getStrictData().asByteBuffer(), channel, null);
                             }
                         }))
                         .run(Env.websocketActorMaterializer());
@@ -82,7 +84,7 @@ public class ReactiveWebSocketHandler implements WebSocketConnectionCallback {
             @Override
             protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message) {
                 try {
-                    get(id).forEach(queue -> queue.offer(new TextWebSocketMessage(DateTime.now(), message.getData())));
+                    get(id).forEach(queue -> queue.offer(TextMessage.create(message.getData())));
                 } catch (Exception e) {
                     logger.error("Error while handling Websocket message", e);
                 }
@@ -94,7 +96,7 @@ public class ReactiveWebSocketHandler implements WebSocketConnectionCallback {
                     ByteString bs = List.ofAll(Arrays.asList(message.getData().getResource()))
                             .map(ByteString::fromByteBuffer)
                             .foldLeft(ByteString.empty(), ByteString::concat);
-                    get(id).forEach(queue -> queue.offer(new BinaryWebSocketMessage(DateTime.now(), bs)));
+                    get(id).forEach(queue -> queue.offer(BinaryMessage.create(bs)));
                 } catch (Exception e) {
                     logger.error("Error while handling Websocket message", e);
                 }
@@ -126,7 +128,7 @@ public class ReactiveWebSocketHandler implements WebSocketConnectionCallback {
         channel.resumeReceives();
     }
 
-    private Option<SourceQueueWithComplete<WebSocketMessage>> get(String id) {
+    private Option<SourceQueueWithComplete<Message>> get(String id) {
         return Option.apply(connections.get(id));
     }
 }

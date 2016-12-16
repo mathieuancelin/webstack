@@ -3,6 +3,9 @@ package org.reactivecouchbase.webstack;
 import akka.Done;
 import akka.actor.ActorRef;
 import akka.actor.Cancellable;
+import akka.http.javadsl.model.ws.TextMessage;
+import akka.stream.javadsl.Flow;
+import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import javaslang.collection.HashMap;
 import org.reactivecouchbase.json.Json;
@@ -12,6 +15,10 @@ import org.reactivecouchbase.webstrack.libs.ws.WSResponse;
 import org.reactivecouchbase.webstrack.mvc.actions.Action;
 import org.reactivecouchbase.webstrack.mvc.result.Result;
 import org.reactivecouchbase.webstrack.mvc.result.Results;
+import org.reactivecouchbase.webstrack.websocket.ActorFlow;
+import org.reactivecouchbase.webstrack.websocket.WebSocketAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.util.concurrent.CompletableFuture;
@@ -23,6 +30,8 @@ import static akka.pattern.PatternsCS.after;
 import static org.reactivecouchbase.webstrack.mvc.result.Results.*;
 
 public class TestController {
+
+    private final static Logger logger = LoggerFactory.getLogger(TestController.class);
 
     public static Action index() {
         return Action.sync(ctx ->
@@ -152,6 +161,35 @@ public class TestController {
                         .flatMap(WSResponse::body)
                         .map(r -> r.json().pretty())
                         .map(p -> Ok.json(p))
+        );
+    }
+
+    public static WebSocketAction simpleWebsocket() {
+        return WebSocketAction.accept(ctx ->
+            Flow.fromSinkAndSource(
+                Sink.foreach(msg -> logger.info(msg.asTextMessage().getStrictText())),
+                Source.tick(
+                    FiniteDuration.Zero(),
+                    FiniteDuration.create(10, TimeUnit.MILLISECONDS),
+                    TextMessage.create(Json.obj().with("msg", "Hello World!").stringify())
+                )
+            )
+        );
+    }
+
+    public static WebSocketAction webSocketPing() {
+        return WebSocketAction.accept(context ->
+            ActorFlow.actorRef(
+                out -> WebsocketPing.props(context, out)
+            )
+        );
+    }
+
+    public static WebSocketAction webSocketWithContext() {
+        return WebSocketAction.accept(context ->
+            ActorFlow.actorRef(
+                out -> MyWebSocketActor.props(context, out)
+            )
         );
     }
 

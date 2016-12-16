@@ -26,6 +26,9 @@ public class TestApplication {
             $(GET,       "/ws2",               TestController::testWS2);
             $(GET,       "/hello/{name}",      TestController::hello);
             $(POST,      "/post",              TestController::testPost);
+            $(GET,       "/websocketping",     TestController::webSocketPing);
+            $(GET,       "/websocketsimple",   TestController::simpleWebsocket);
+            $(GET,       "/websocket/{id}",    TestController::webSocketWithContext);
 
         }}.startApp();
     }
