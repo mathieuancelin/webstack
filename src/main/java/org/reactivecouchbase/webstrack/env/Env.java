@@ -104,4 +104,8 @@ public class Env {
     public static Http websocketHttp() {
         return websocketHttp;
     }
+
+    public static Mode mode() {
+        return Mode.valueOf(configuration().getString("app.mode").getOrElse("Prod"));
+    }
 }
