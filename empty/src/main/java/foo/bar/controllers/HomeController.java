@@ -1,5 +1,6 @@
 package foo.bar.controllers;
 
+import javaslang.collection.HashMap;
 import org.reactivecouchbase.json.Json;
 import org.reactivecouchbase.webstrack.actions.Action;
 
@@ -9,7 +10,8 @@ public class HomeController {
 
     public static Action index() {
         return Action.sync(ctx ->
-            Ok.text("Hello World!\n")
+            Ok.template("index",
+                    HashMap.<String, String>empty().put("who", ctx.queryParam("who").getOrElse("World")))
         );
     }
 }

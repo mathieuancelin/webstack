@@ -129,7 +129,7 @@ public class TestController {
 
     public static Action template() {
         return Action.sync(ctx ->
-                Ok.template("hello", HashMap.<String, String>empty().put("name", "Mathieu"))
+                Ok.template("hello", HashMap.<String, String>empty().put("name", ctx.queryParam("who").getOrElse("Mathieu")))
         );
     }
 
