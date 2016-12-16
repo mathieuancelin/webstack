@@ -5,12 +5,13 @@
 ## Routes
 
 ```java
-public class MyApp extends WebStackApp {
-    public void defineRoutes() {
-        $(GET,       "/hello",        MyController::index);
-        $(GET,       "/sse",          MyController::testStream);
-    }
-}
+public class MyApp extends WebStackApp {{
+
+    $(GET,       "/hello",        MyController::index);
+    $(GET,       "/sse",          MyController::testStream);
+    $(GET,       "/ws",           MyController::pingWebSocket);
+
+}}
 ```
 
 just use the right main class
@@ -168,6 +169,74 @@ public class SSEApp extends WebStackApp {
                     .map(j -> "data: " + j + "\n\n")
                 ).as("text/event-stream")
             );
+        }
+    }
+}
+```
+
+## WebSocket
+
+```java
+package example;
+
+public class WebSocketApp extends WebStackApp {
+
+    public void defineRoutes() {
+        $(GET,   "/simple",   WebSocketController::simpleWebsocket);
+        $(GET,   "/ping",     WebSocketController::webSocketPing);
+    }
+
+    public static class WebSocketController {
+
+        private final static Logger logger = LoggerFactory.getLogger(WebSocketController.class);
+
+        // Use a flow to handle input and output
+        public WebSocketAction simpleWebsocket() {
+            return WebSocketAction.accept(ctx ->
+                Flow.fromSinkAndSource(
+                    Sink.foreach(msg -> logger.info(msg.asTextMessage().getStrictText())),
+                    Source.tick(
+                        FiniteDuration.Zero(),
+                        FiniteDuration.create(10, TimeUnit.MILLISECONDS),
+                        TextMessage.create(Json.obj().with("msg", "Hello World!").stringify())
+                    )
+                )
+            );
+        }
+
+        // Use an actor to handle input and output
+        @WebSocketMapping(path = "/ping")
+            return WebSocketAction.accept(context ->
+                ActorFlow.actorRef(
+                    out -> WebsocketPing.props(context, out)
+                )
+            );
+        }
+    }
+
+    private static class WebsocketPing extends UntypedActor {
+
+        private final ActorRef out;
+        private final WebSocketContext ctx;
+        private static final Logger logger = LoggerFactory.getLogger(WebsocketPing.class);
+
+        public WebsocketPing(WebSocketContext ctx, ActorRef out) {
+            this.out = out;
+            this.ctx = ctx;
+        }
+
+        public static Props props(WebSocketContext ctx, ActorRef out) {
+            return Props.create(WebsocketPing.class, () -> new WebsocketPing(ctx, out));
+        }
+
+        public void onReceive(Object message) throws Exception {
+            logger.info("[WebsocketPing] received message from the client {}", message);
+            if (message instanceof Message) {
+                logger.info("[WebsocketPing] Sending message back the client");
+                out.tell(message, getSelf());
+            } else {
+                unhandled(message);
+            }
         }
     }
 }
