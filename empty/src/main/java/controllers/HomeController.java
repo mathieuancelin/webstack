@@ -11,7 +11,7 @@ public class HomeController {
     public static Action index() {
         return Action.sync(ctx ->
             Ok.template("index",
-                    HashMap.<String, String>empty().put("who", ctx.queryParam("who").getOrElse("World")))
+                HashMap.<String, String>empty().put("who", ctx.queryParam("who").getOrElse("World")))
         );
     }
 }

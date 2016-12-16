@@ -86,7 +86,7 @@ public class App extends WebStackApp {
         $(GET, "/location", SSEController::fetchLocation);
     }
 
-    public static class BaseController {
+    public static class SSEController {
 
         private static final Logger logger = LoggerFactory.getLogger(BaseController.class);
 
@@ -120,7 +120,7 @@ public class App extends WebStackApp {
         }
 
         public Action json() {
-            return Action.sync(ctx ->
+            return LoggedAction.sync(ctx ->
                 Ok.json(
                     Json.obj().with("message", "Hello World!")
                 )

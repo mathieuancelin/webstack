@@ -1,8 +1,8 @@
 'use strict';
 
-let compileJava = run({
-  name: 'java',
-  sh: './gradlew compileJava',
+let watchJava = run({
+  name: 'Java',
+  sh: 'echo Java changed',
   watch: 'src/main/java/**/*.java'
 });
 
@@ -15,6 +15,6 @@ let watchStatic = run({
 let server = runServer({
   httpPort,
   sh: `SERVER_PORT=${httpPort} ./gradlew run`
-}).dependsOn(compileJava, watchStatic);
+}).dependsOn(watchJava, watchStatic);
 
 proxy(server, 9000);
