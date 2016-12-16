@@ -25,7 +25,7 @@ import org.reactivecouchbase.json.JsObject;
 import org.reactivecouchbase.json.JsValue;
 import org.reactivecouchbase.json.Json;
 import org.reactivecouchbase.webstrack.BootstrappedContext;
-import org.reactivecouchbase.webstrack.libs.ws.WS;
+import org.reactivecouchbase.webstrack.ws.WS;
 import org.reactivecouchbase.webstrack.websocket.ActorFlow;
 import scala.concurrent.duration.FiniteDuration;
 

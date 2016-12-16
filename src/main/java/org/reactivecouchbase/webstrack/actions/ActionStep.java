@@ -1,10 +1,10 @@
-package org.reactivecouchbase.webstrack.mvc.actions;
+package org.reactivecouchbase.webstrack.actions;
 
 import io.undertow.server.HttpServerExchange;
 import javaslang.collection.HashMap;
 import org.reactivecouchbase.concurrent.Future;
 import org.reactivecouchbase.webstrack.env.Env;
-import org.reactivecouchbase.webstrack.mvc.result.Result;
+import org.reactivecouchbase.webstrack.result.Result;
 
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;

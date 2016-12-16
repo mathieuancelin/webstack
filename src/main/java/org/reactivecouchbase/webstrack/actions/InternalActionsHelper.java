@@ -1,10 +1,10 @@
-package org.reactivecouchbase.webstrack.mvc.actions;
+package org.reactivecouchbase.webstrack.actions;
 
 import org.reactivecouchbase.concurrent.Future;
 import org.reactivecouchbase.json.Json;
 import org.reactivecouchbase.json.mapping.ThrowableWriter;
-import org.reactivecouchbase.webstrack.mvc.result.Result;
-import org.reactivecouchbase.webstrack.mvc.result.Results;
+import org.reactivecouchbase.webstrack.result.Result;
+import org.reactivecouchbase.webstrack.result.Results;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

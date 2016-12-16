@@ -1,4 +1,4 @@
-package org.reactivecouchbase.webstrack.mvc.result;
+package org.reactivecouchbase.webstrack.result;
 
 public class MediaType {
 

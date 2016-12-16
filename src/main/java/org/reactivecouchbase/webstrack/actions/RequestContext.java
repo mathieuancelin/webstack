@@ -1,4 +1,4 @@
-package org.reactivecouchbase.webstrack.mvc.actions;
+package org.reactivecouchbase.webstrack.actions;
 
 import akka.http.scaladsl.coding.Gzip$;
 import akka.stream.ActorMaterializer;

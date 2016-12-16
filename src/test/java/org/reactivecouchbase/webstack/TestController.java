@@ -10,11 +10,11 @@ import akka.stream.javadsl.Source;
 import javaslang.collection.HashMap;
 import org.reactivecouchbase.json.Json;
 import org.reactivecouchbase.webstrack.env.Env;
-import org.reactivecouchbase.webstrack.libs.ws.WS;
-import org.reactivecouchbase.webstrack.libs.ws.WSResponse;
-import org.reactivecouchbase.webstrack.mvc.actions.Action;
-import org.reactivecouchbase.webstrack.mvc.result.Result;
-import org.reactivecouchbase.webstrack.mvc.result.Results;
+import org.reactivecouchbase.webstrack.ws.WS;
+import org.reactivecouchbase.webstrack.ws.WSResponse;
+import org.reactivecouchbase.webstrack.actions.Action;
+import org.reactivecouchbase.webstrack.result.Result;
+import org.reactivecouchbase.webstrack.result.Results;
 import org.reactivecouchbase.webstrack.websocket.ActorFlow;
 import org.reactivecouchbase.webstrack.websocket.WebSocketAction;
 import org.slf4j.Logger;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static akka.pattern.PatternsCS.after;
-import static org.reactivecouchbase.webstrack.mvc.result.Results.*;
+import static org.reactivecouchbase.webstrack.result.Results.*;
 
 public class TestController {
 

@@ -1,4 +1,4 @@
-package org.reactivecouchbase.webstrack.mvc.actions;
+package org.reactivecouchbase.webstrack.actions;
 
 import akka.util.ByteString;
 import javaslang.collection.HashMap;

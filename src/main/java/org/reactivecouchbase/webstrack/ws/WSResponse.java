@@ -1,4 +1,4 @@
-package org.reactivecouchbase.webstrack.libs.ws;
+package org.reactivecouchbase.webstrack.ws;
 
 import akka.http.javadsl.model.HttpHeader;
 import akka.http.javadsl.model.HttpResponse;

@@ -1,4 +1,4 @@
-package org.reactivecouchbase.webstrack.mvc.result;
+package org.reactivecouchbase.webstrack.result;
 
 import akka.stream.OverflowStrategy;
 import akka.stream.javadsl.Source;

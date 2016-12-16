@@ -1,4 +1,4 @@
-package org.reactivecouchbase.webstrack.libs.ws;
+package org.reactivecouchbase.webstrack.ws;
 
 import akka.util.ByteString;
 import org.reactivecouchbase.common.Throwables;

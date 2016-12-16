@@ -1,4 +1,4 @@
-package org.reactivecouchbase.webstrack.mvc.result;
+package org.reactivecouchbase.webstrack.result;
 
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;

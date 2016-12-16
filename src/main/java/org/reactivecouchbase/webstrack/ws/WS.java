@@ -1,4 +1,4 @@
-package org.reactivecouchbase.webstrack.libs.ws;
+package org.reactivecouchbase.webstrack.ws;
 
 import akka.actor.ActorSystem;
 import akka.http.javadsl.ConnectHttp;

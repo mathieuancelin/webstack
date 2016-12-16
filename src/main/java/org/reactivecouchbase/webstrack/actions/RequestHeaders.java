@@ -1,12 +1,9 @@
-package org.reactivecouchbase.webstrack.mvc.actions;
+package org.reactivecouchbase.webstrack.actions;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HttpString;
 import javaslang.collection.*;
 import org.reactivecouchbase.functional.Option;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
 
 public class RequestHeaders {
 

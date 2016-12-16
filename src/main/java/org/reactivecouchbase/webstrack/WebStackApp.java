@@ -2,8 +2,8 @@ package org.reactivecouchbase.webstrack;
 
 import akka.http.javadsl.model.HttpMethod;
 import io.undertow.server.RoutingHandler;
-import org.reactivecouchbase.webstrack.mvc.actions.ActionSupplier;
-import org.reactivecouchbase.webstrack.server.ReactiveHttpHandler;
+import org.reactivecouchbase.webstrack.actions.ActionSupplier;
+import org.reactivecouchbase.webstrack.actions.ReactiveHttpHandler;
 import org.reactivecouchbase.webstrack.websocket.ReactiveWebSocketHandler;
 import org.reactivecouchbase.webstrack.websocket.WebSocketActionSupplier;
 

@@ -1,4 +1,4 @@
-package org.reactivecouchbase.webstrack.server;
+package org.reactivecouchbase.webstrack.actions;
 
 import akka.Done;
 import akka.japi.Pair;
@@ -11,16 +11,13 @@ import io.undertow.util.HttpString;
 import org.reactivecouchbase.json.Json;
 import org.reactivecouchbase.json.mapping.ThrowableWriter;
 import org.reactivecouchbase.webstrack.env.Env;
-import org.reactivecouchbase.webstrack.mvc.actions.Action;
-import org.reactivecouchbase.webstrack.mvc.actions.ActionSupplier;
-import org.reactivecouchbase.webstrack.mvc.result.Result;
+import org.reactivecouchbase.webstrack.result.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.channels.StreamSinkChannel;
 
 import java.io.IOException;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Supplier;
 
 public class ReactiveHttpHandler implements HttpHandler {
 

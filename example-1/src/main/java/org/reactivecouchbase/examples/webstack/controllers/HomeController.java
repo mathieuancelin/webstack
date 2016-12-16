@@ -2,14 +2,14 @@ package org.reactivecouchbase.examples.webstack.controllers;
 
 import akka.stream.javadsl.Source;
 import org.reactivecouchbase.json.Json;
-import org.reactivecouchbase.webstrack.libs.ws.WS;
-import org.reactivecouchbase.webstrack.libs.ws.WSResponse;
-import org.reactivecouchbase.webstrack.mvc.actions.Action;
+import org.reactivecouchbase.webstrack.ws.WS;
+import org.reactivecouchbase.webstrack.ws.WSResponse;
+import org.reactivecouchbase.webstrack.actions.Action;
 import scala.concurrent.duration.FiniteDuration;
 
 import java.util.concurrent.TimeUnit;
 
-import static org.reactivecouchbase.webstrack.mvc.result.Results.*;
+import static org.reactivecouchbase.webstrack.result.Results.*;
 
 public class HomeController {
 

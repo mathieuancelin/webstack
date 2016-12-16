@@ -1,4 +1,4 @@
-package org.reactivecouchbase.webstrack.mvc.actions;
+package org.reactivecouchbase.webstrack.actions;
 
 public interface ActionSupplier {
     Action get();
