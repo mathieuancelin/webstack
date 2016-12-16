@@ -1,0 +1,31 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'idea'
+
+group = 'foo.bar'
+version = '1.0.0-SNAPSHOT'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+mainClassName = 'org.reactivecouchbase.webstrack.WebStack'
+applicationDefaultJvmArgs = ["-Dwebstack.port=9000"]
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://raw.github.com/ReactiveCouchbase/repository/master/snapshots/'
+    }
+    maven {
+        url 'https://raw.github.com/mathieuancelin/webstack/master/repository/snapshots/'
+    }
+}
+
+dependencies {
+    compile("org.reactivecouchbase.webstack:webstack-core:0.1.0-SNAPSHOT")
+}
