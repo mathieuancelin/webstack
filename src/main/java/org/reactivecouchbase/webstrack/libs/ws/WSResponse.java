@@ -13,6 +13,7 @@ import javaslang.collection.List;
 import javaslang.collection.Map;
 import org.reactivecouchbase.concurrent.Future;
 import org.reactivecouchbase.functional.Option;
+import org.reactivecouchbase.webstrack.env.Env;
 import org.reactivestreams.Publisher;
 
 import java.util.concurrent.ExecutorService;
@@ -52,13 +53,13 @@ public class WSResponse {
     }
 
     public Future<WSBody> body() {
-        return body(InternalWSHelper.wsExecutor);
+        return body(Env.wsExecutor());
     }
 
     public Future<WSBody> body(ExecutorService ec) {
         Source<ByteString, ?> source = bodyAsStream();
         return Future.fromJdkCompletableFuture(
-                source.runFold(ByteString.empty(), ByteString::concat, InternalWSHelper.wsClientActorMaterializer).toCompletableFuture()
+                source.runFold(ByteString.empty(), ByteString::concat, Env.wsClientActorMaterializer()).toCompletableFuture()
         ).map(WSBody::new, ec);
     }
 
@@ -75,12 +76,12 @@ public class WSResponse {
     }
 
     public Publisher<ByteString> bodyAsPublisher(AsPublisher asPublisher) {
-        ActorMaterializer materializer = InternalWSHelper.wsClientActorMaterializer;
+        ActorMaterializer materializer = Env.wsClientActorMaterializer();
         return bodyAsStream().runWith(Sink.asPublisher(asPublisher), materializer);
     }
 
     public Publisher<ByteString> rawBodyAsPublisher(AsPublisher asPublisher) {
-        ActorMaterializer materializer = InternalWSHelper.wsClientActorMaterializer;
+        ActorMaterializer materializer = Env.wsClientActorMaterializer();
         return rawBodyAsStream().runWith(Sink.asPublisher(asPublisher), materializer);
     }
 }

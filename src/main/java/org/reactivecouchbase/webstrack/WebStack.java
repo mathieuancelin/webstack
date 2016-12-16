@@ -8,6 +8,7 @@ import javaslang.collection.List;
 import org.reactivecouchbase.common.Throwables;
 import org.reactivecouchbase.json.Json;
 import org.reactivecouchbase.webstrack.config.Configuration;
+import org.reactivecouchbase.webstrack.env.Env;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ public class WebStack {
     static final Logger logger = LoggerFactory.getLogger(WebStack.class);
 
     public static void main(String... args) {
+        logger.trace("Scanning classpath looking for WebStackApp implementations");
         Reflections reflections = new Reflections("");
         List.ofAll(reflections.getSubTypesOf(WebStackApp.class))
             .headOption()
@@ -35,8 +37,9 @@ public class WebStack {
     }
 
     static BootstrappedContext startWebStackApp(WebStackApp webstackApp) {
-        int port = Configuration.current().getInt("webstack.port").getOrElse(9000);
-        String host = Configuration.current().getString("webstack.host").getOrElse("0.0.0.0");
+        logger.trace("Starting WebStackApp");
+        int port = Env.configuration().getInt("webstack.port").getOrElse(9000);
+        String host = Env.configuration().getString("webstack.host").getOrElse("0.0.0.0");
         webstackApp.defineRoutes();
         RoutingHandler handler = webstackApp.routingHandler.setInvalidMethodHandler(ex -> {
             // TODO : do it better
@@ -49,6 +52,7 @@ public class WebStack {
         }).setFallbackHandler(path().addPrefixPath("/assets",
             resource(new ClassPathResourceManager(WebStack.class.getClassLoader(), "public")))
         );
+        logger.trace("Starting Undertow");
         Undertow server = Undertow.builder()
                 .addHttpListener(port, host)
                 .setHandler(handler)
@@ -56,9 +60,12 @@ public class WebStack {
         webstackApp.beforeStart();
         server.start();
         webstackApp.afterStart();
+        logger.trace("Undertow started");
         logger.info("Running WebStack on http://" + host + ":" + port);
         BootstrappedContext bootstrapedContext = new BootstrappedContext(server, webstackApp);
+        logger.trace("Registering shutdown hook");
         Runtime.getRuntime().addShutdownHook(new Thread(bootstrapedContext::stopApp));
+        logger.trace("Init done");
         return bootstrapedContext;
     }
 }

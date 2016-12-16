@@ -11,18 +11,12 @@ public class Configuration {
 
     public final Config underlying;
 
-    private static final Configuration DEFAULT = Configuration.of(ConfigFactory.load());
-
     Configuration(Config underlying) {
         this.underlying = underlying;
     }
 
     public static Configuration of(Config underlying) {
         return new Configuration(underlying);
-    }
-
-    public static Configuration current() {
-        return DEFAULT;
     }
 
     private <T> Option<T> readValue(String path, Supplier<T> supplier) {

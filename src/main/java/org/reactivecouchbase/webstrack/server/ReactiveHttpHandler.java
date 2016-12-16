@@ -4,12 +4,13 @@ import akka.Done;
 import akka.japi.Pair;
 import akka.stream.javadsl.Keep;
 import akka.stream.javadsl.Sink;
-import com.google.common.base.Throwables;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
-import org.reactivecouchbase.webstrack.libs.concurrent.Concurrent;
+import org.reactivecouchbase.json.Json;
+import org.reactivecouchbase.json.mapping.ThrowableWriter;
+import org.reactivecouchbase.webstrack.env.Env;
 import org.reactivecouchbase.webstrack.mvc.actions.Action;
 import org.reactivecouchbase.webstrack.mvc.result.Result;
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ public class ReactiveHttpHandler implements HttpHandler {
                     Pair<?, CompletionStage<Done>> run = result.source.toMat(Sink.foreach(bs -> {
                         // logger.trace("chunk: " + bs.utf8String());
                         responseChannel.write(bs.asByteBuffer());
-                    }), Keep.both()).run(Concurrent.blockingActorMaterializer);
+                    }), Keep.both()).run(Env.blockingActorMaterializer());
                     result.materializedValue.trySuccess(run.first());
                     run.second().whenComplete((success, error) -> {
                         try {
@@ -60,11 +61,16 @@ public class ReactiveHttpHandler implements HttpHandler {
                     });
                 }
                 for (Throwable t : resultTry.asFailure()) {
-                    // TODO : handle
-                    t.printStackTrace();
-                    throw Throwables.propagate(t);
+                    exchange.setStatusCode(500);
+                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+                    exchange.getResponseSender().send(
+                        Json.obj().with("error",
+                            new ThrowableWriter(true).write(t))
+                                .stringify()
+                    );
+                    exchange.endExchange();
                 }
-            }, Concurrent.blockingExecutor);
+            }, Env.blockingExecutor());
         });
 
     }

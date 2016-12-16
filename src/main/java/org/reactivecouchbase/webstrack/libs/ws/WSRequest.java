@@ -17,6 +17,7 @@ import org.reactivecouchbase.common.Duration;
 import org.reactivecouchbase.concurrent.Future;
 import org.reactivecouchbase.functional.Option;
 import org.reactivecouchbase.json.JsValue;
+import org.reactivecouchbase.webstrack.env.Env;
 import org.reactivestreams.Publisher;
 
 import java.io.InputStream;
@@ -80,7 +81,7 @@ public class WSRequest {
         this.followsRedirect = Option.none();
         this.virtualHost = Option.none();
         this.contentType = ContentTypes.TEXT_PLAIN_UTF8;
-        this.materializer = InternalWSHelper.wsClientActorMaterializer;
+        this.materializer = Env.wsClientActorMaterializer();
 
     }
 
@@ -239,7 +240,7 @@ public class WSRequest {
     // TODO : handle followsRedirect
     // TODO : handle virtualHost
     public Future<WSResponse> call() {
-        return call(InternalWSHelper.wsExecutor);
+        return call(Env.wsExecutor());
     }
 
     public Future<WSResponse> call(ExecutorService ec) {

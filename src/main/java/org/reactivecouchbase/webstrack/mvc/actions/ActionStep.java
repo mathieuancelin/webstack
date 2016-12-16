@@ -3,7 +3,7 @@ package org.reactivecouchbase.webstrack.mvc.actions;
 import io.undertow.server.HttpServerExchange;
 import javaslang.collection.HashMap;
 import org.reactivecouchbase.concurrent.Future;
-import org.reactivecouchbase.webstrack.libs.concurrent.Concurrent;
+import org.reactivecouchbase.webstrack.env.Env;
 import org.reactivecouchbase.webstrack.mvc.result.Result;
 
 import java.util.concurrent.ExecutorService;
@@ -30,11 +30,11 @@ public interface ActionStep {
                 InternalActionsHelper.logger.error("Sync action error", e);
                 return InternalActionsHelper.transformError(e, req);
             }
-        }, Concurrent.blockingExecutor));
+        }, Env.blockingExecutor()));
     }
 
     default Action async(Function<RequestContext, Future<Result>> block) {
-        return async(Concurrent.blockingExecutor, block);
+        return async(Env.blockingExecutor(), block);
     }
 
     default Action async(ExecutorService ec, Function<RequestContext, Future<Result>> block) {

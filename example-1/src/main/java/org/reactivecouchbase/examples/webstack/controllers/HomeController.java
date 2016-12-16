@@ -1,37 +1,46 @@
 package org.reactivecouchbase.examples.webstack.controllers;
 
-import org.reactivecouchbase.webstrack.BootstrappedContext;
-import org.reactivecouchbase.webstrack.WebStackApp;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import akka.Done;
-import akka.actor.ActorRef;
-import akka.actor.Cancellable;
 import akka.stream.javadsl.Source;
-import javaslang.collection.HashMap;
 import org.reactivecouchbase.json.Json;
-import org.reactivecouchbase.webstrack.libs.concurrent.Concurrent;
 import org.reactivecouchbase.webstrack.libs.ws.WS;
 import org.reactivecouchbase.webstrack.libs.ws.WSResponse;
 import org.reactivecouchbase.webstrack.mvc.actions.Action;
-import org.reactivecouchbase.webstrack.mvc.result.Result;
-import org.reactivecouchbase.webstrack.mvc.result.Results;
 import scala.concurrent.duration.FiniteDuration;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-import static akka.pattern.PatternsCS.after;
 import static org.reactivecouchbase.webstrack.mvc.result.Results.*;
-import static akka.http.javadsl.model.HttpMethods.*;
 
 public class HomeController {
 
     public static Action index() {
         return Action.sync(ctx ->
                 Ok.text("Hello World!\n")
+        );
+    }
+
+    public static Action stream() {
+        return Action.sync(ctx ->
+            Ok.stream(
+                Source.tick(
+                    FiniteDuration.apply(0, TimeUnit.MILLISECONDS),
+                    FiniteDuration.apply(100, TimeUnit.MILLISECONDS),
+                    ""
+                )
+                .map(l -> Json.obj().with("time", System.currentTimeMillis()).with("message", "Hello World!"))
+                .map(Json::stringify)
+                .map(j -> "data: " + j + "\n\n")
+            ).as("text/event-stream")
+        );
+    }
+
+    public static Action location() {
+        return Action.async(ctx ->
+            WS.host("http://freegeoip.net").withPath("/json/")
+                .call()
+                .flatMap(WSResponse::body)
+                .map(r -> r.json().pretty())
+                .map(p -> Ok.json(p))
         );
     }
 }

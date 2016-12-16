@@ -11,7 +11,7 @@ public class RequestQueryParams {
     private final Map<String, List<String>> queryParams;
 
     RequestQueryParams(HttpServerExchange request) {
-        this.queryParams = HashMap.ofAll(request.getQueryParameters()).mapValues(v -> List.ofAll(v));
+        this.queryParams = HashMap.ofAll(request.getQueryParameters()).mapValues(List::ofAll);
     }
 
     public Map<String, List<String>> raw() {

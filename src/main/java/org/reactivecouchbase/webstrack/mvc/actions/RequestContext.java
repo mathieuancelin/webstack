@@ -12,10 +12,9 @@ import io.undertow.server.handlers.Cookie;
 import javaslang.collection.HashMap;
 import org.reactivecouchbase.concurrent.Future;
 import org.reactivecouchbase.functional.Option;
+import org.reactivecouchbase.webstrack.env.Env;
 import org.reactivecouchbase.webstrack.config.Configuration;
-import org.reactivecouchbase.webstrack.libs.concurrent.Concurrent;
 import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 import java.util.concurrent.ExecutorService;
@@ -47,7 +46,7 @@ public class RequestContext {
         this.cookies = new RequestCookies(httpServerExchange);
         this.pathParams = new RequestPathParams(httpServerExchange);
         this.ec = ec;
-        this.configuration = Configuration.current();
+        this.configuration = Env.configuration();
     }
 
     public ExecutorService currentExecutor() {
@@ -75,11 +74,11 @@ public class RequestContext {
     }
 
     public Future<RequestBody> body() {
-        return body(Concurrent.blockingExecutor);
+        return body(Env.blockingExecutor());
     }
 
     public Future<RequestBody> body(ExecutorService ec) {
-        ActorMaterializer materializer = Concurrent.blockingActorMaterializer;
+        ActorMaterializer materializer = Env.blockingActorMaterializer();
         return Future.fromJdkCompletableFuture(
             bodyAsStream().runFold(ByteString.empty(), ByteString::concat, materializer).toCompletableFuture()
         ).map(RequestBody::new, ec);
@@ -124,12 +123,12 @@ public class RequestContext {
     }
 
     public Publisher<ByteString> bodyAsPublisher(AsPublisher asPublisher) {
-        ActorMaterializer materializer = Concurrent.blockingActorMaterializer;
+        ActorMaterializer materializer = Env.blockingActorMaterializer();
         return bodyAsStream().runWith(Sink.asPublisher(asPublisher), materializer);
     }
 
     public Publisher<ByteString> rawBodyAsPublisher(AsPublisher asPublisher) {
-        ActorMaterializer materializer = Concurrent.blockingActorMaterializer;
+        ActorMaterializer materializer = Env.blockingActorMaterializer();
         return rawBodyAsStream().runWith(Sink.asPublisher(asPublisher), materializer);
     }
 

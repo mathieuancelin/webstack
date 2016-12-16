@@ -13,7 +13,9 @@ public abstract class WebStackApp {
 
     RoutingHandler routingHandler = routing();
 
-    public abstract void defineRoutes();
+    public void defineRoutes() {
+
+    }
 
     public void $(HttpMethod method, String url, Supplier<Action> action) {
         route(method, url, action);

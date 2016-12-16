@@ -6,7 +6,7 @@ import akka.actor.Cancellable;
 import akka.stream.javadsl.Source;
 import javaslang.collection.HashMap;
 import org.reactivecouchbase.json.Json;
-import org.reactivecouchbase.webstrack.libs.concurrent.Concurrent;
+import org.reactivecouchbase.webstrack.env.Env;
 import org.reactivecouchbase.webstrack.libs.ws.WS;
 import org.reactivecouchbase.webstrack.libs.ws.WSResponse;
 import org.reactivecouchbase.webstrack.mvc.actions.Action;
@@ -63,8 +63,8 @@ public class TestController {
                 for (Cancellable c : ttry.asSuccess()) {
                     after(
                             FiniteDuration.create(500, TimeUnit.MILLISECONDS),
-                            Concurrent.system.scheduler(),
-                            Concurrent.system.dispatcher(),
+                            Env.globalActorSystem().scheduler(),
+                            Env.globalActorSystem().dispatcher(),
                             CompletableFuture.completedFuture(Done.getInstance())
                     ).thenAccept(d ->
                             c.cancel()
