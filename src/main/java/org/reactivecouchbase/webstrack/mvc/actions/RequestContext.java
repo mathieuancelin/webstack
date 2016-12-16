@@ -69,7 +69,7 @@ public class RequestContext {
         }
     }
 
-    public HttpServerExchange getExchange() {
+    public HttpServerExchange exchange() {
         return httpServerExchange;
     }
 
@@ -133,7 +133,7 @@ public class RequestContext {
     }
 
     public Option<String> header(String name) {
-        return Option.apply(getExchange().getRequestHeaders().getFirst(name));
+        return Option.apply(exchange().getRequestHeaders().getFirst(name));
     }
 
     public RequestHeaders headers() {

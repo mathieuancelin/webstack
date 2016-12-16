@@ -12,6 +12,7 @@ import org.reactivecouchbase.json.Json;
 import org.reactivecouchbase.json.mapping.ThrowableWriter;
 import org.reactivecouchbase.webstrack.env.Env;
 import org.reactivecouchbase.webstrack.mvc.actions.Action;
+import org.reactivecouchbase.webstrack.mvc.actions.ActionSupplier;
 import org.reactivecouchbase.webstrack.mvc.result.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +26,9 @@ public class ReactiveHttpHandler implements HttpHandler {
 
     static final Logger logger = LoggerFactory.getLogger(ReactiveHttpHandler.class);
 
-    private final Supplier<Action> action;
+    private final ActionSupplier action;
 
-    public ReactiveHttpHandler(Supplier<Action> action) {
+    public ReactiveHttpHandler(ActionSupplier action) {
         this.action = action;
     }
 
