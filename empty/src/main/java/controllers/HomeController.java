@@ -1,4 +1,4 @@
-package foo.bar.controllers;
+package controllers;
 
 import javaslang.collection.HashMap;
 import org.reactivecouchbase.json.Json;
