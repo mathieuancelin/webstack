@@ -260,7 +260,11 @@ The code is organized this way
   * public
     * images
     * js
+      * main.js
     * css
+      * main.css
+* tests
+  * AppTest.java
 
 ## Use it in your project
 
