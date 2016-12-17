@@ -242,6 +242,26 @@ public class WebSocketApp extends WebStackApp {
 }
 ```
 
+## Use it for a project
+
+Just clone the `empty` directory from this repo. It's a ready to work `webstack` application waiting for you code.
+
+The code is organized this way
+
+* app
+  * controllers
+    * HomeController.java
+  * Routes.java
+* res
+  * application.conf
+  * logback.xml
+  * templates
+    * index.html
+  * public
+    * images
+    * js
+    * css
+
 ## Use it in your project
 
 in your `build.gradle` file
@@ -251,11 +271,11 @@ in your `build.gradle` file
 repositories {
     mavenCentral()
     maven {
-        url 'https://raw.github.com/mathieuancelin/webstack/master/repository/releases/'
+        url 'https://raw.github.com/mathieuancelin/webstack/master/repository/snapshots/'
     }
 }
 
 dependencies {
-    compile("org.reactivecouchbase.webstack:webstack-core:0.1.0")
+    compile("org.reactivecouchbase.webstack:webstack-core:0.1.0-SNAPSHOT")
 }
 ```

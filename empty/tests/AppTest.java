@@ -17,7 +17,6 @@ import org.reactivecouchbase.json.Json;
 import org.reactivecouchbase.webstrack.BootstrappedContext;
 import org.reactivecouchbase.webstrack.ws.WS;
 
-
 public class AppTest {
 
     private static final Duration MAX_AWAIT = Duration.parse("4s");
