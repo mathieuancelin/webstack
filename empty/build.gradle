@@ -12,8 +12,34 @@ group = 'foo.bar'
 version = '1.0.0-SNAPSHOT'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-
 mainClassName = 'org.reactivecouchbase.webstrack.WebStack'
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['app']
+        }
+        resources {
+            srcDirs = ['res']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['tests']
+        }
+        resources {
+            srcDirs = ['res']
+        }
+    }
+
+}
+
+compileJava {
+    //enable compilation in a separate daemon process
+    options.fork = false
+    //enable incremental compilation
+    options.incremental = true
+}
 
 repositories {
     mavenCentral()
@@ -27,4 +53,7 @@ repositories {
 
 dependencies {
     compile("org.reactivecouchbase.webstack:webstack-core:0.1.0-SNAPSHOT")
+
+    testCompile("junit:junit:4.12")
+    testCompile("org.assertj:assertj-core:3.5.2")
 }

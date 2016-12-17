@@ -1,15 +1,15 @@
 'use strict';
 
-let watchJava = run({
+let watchApp = run({
   name: 'Java',
-  sh: 'echo Java changed',
-  watch: 'src/main/java/**/*.java'
+  sh: 'echo App changed',
+  watch: 'app/**/*'
 });
 
 let watchStatic = run({
   name: 'Static',
-  sh: 'echo Static changed',
-  watch: 'src/main/resources/**/*'
+  sh: 'echo Res changed',
+  watch: 'res/**/*'
 });
 
 let server = runServer({
