@@ -205,7 +205,7 @@ public class WebSocketApp extends WebStackApp {
         }
 
         // Use an actor to handle input and output
-        @WebSocketMapping(path = "/ping")
+        public WebSocketAction webSocketPing() {
             return WebSocketAction.accept(context ->
                 ActorFlow.actorRef(
                     out -> WebsocketPing.props(context, out)
