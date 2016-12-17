@@ -246,7 +246,10 @@ public class WebSocketApp extends WebStackApp {
 
 Just clone the `empty` directory from this repo. It's a ready to work `webstack` application waiting for you code.
 
-The code is organized this way
+It is using [devloop](https://github.com/criteo/loop) to enhance development flow.
+To install it just `npm install -g devloop` then run `loop` in the app.
+
+The code of the app is organized this way
 
 * app
   * controllers
