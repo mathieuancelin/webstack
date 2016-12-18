@@ -5,7 +5,6 @@ import akka.stream.scaladsl.{Keep, Sink}
 import io.undertow.server.{HttpHandler, HttpServerExchange}
 import io.undertow.util.{Headers, HttpString}
 import org.reactivecouchbase.webstack.env.Env
-import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json
 
 import scala.collection.JavaConversions._
@@ -21,9 +20,10 @@ class ReactiveActionHandler(action: => Action) extends HttpHandler {
     exchange.setMaxEntitySize(Long.MaxValue)
     exchange.dispatch(new Runnable {
       override def run(): Unit = {
+        // TODO : find a better way to pass the execution context and materializer
         implicit val ec = Env.blockingExecutor
         if (exchange.isInIoThread) {
-          Env.logger.warn("Request processed in IO thread !!!!");
+          Env.logger.warn("Request processed in IO thread !!!!")
         }
         action.run(exchange).andThen {
           case Failure(e) => {

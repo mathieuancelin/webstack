@@ -69,6 +69,7 @@ trait ActionStep {
   }
 
   def sync(block: Function[RequestContext, Result]): Action = {
+    // TODO : find a better way to pass the execution context
     implicit val ec = Env.blockingExecutor
     async { req => Future {
       Try(block.apply(req)) match {

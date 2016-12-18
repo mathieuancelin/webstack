@@ -97,7 +97,7 @@ case class RequestContext(private val state: Map[String, AnyRef], private val un
   def body[T](bodyParser: (RequestHeaders, Source[ByteString, Any]) => Future[T]): Future[T] = bodyParser.apply(headers, bodyAsStream)
 
   def body[T](bodyParser: (RequestHeaders, Publisher[ByteString]) => Future[T])(implicit materializer: ActorMaterializer): Future[T] = {
-    bodyParser.apply(headers, bodyAsPublisher)
+    bodyParser.apply(headers, bodyAsPublisher())
   }
 
   def bodyAsStream: Source[ByteString, Any] = {
@@ -116,14 +116,12 @@ case class RequestContext(private val state: Map[String, AnyRef], private val un
     })
   }
 
-  // Env.blockingActorMaterializer
-  def bodyAsPublisher(implicit materializer: ActorMaterializer): Publisher[ByteString] = {
-    bodyAsStream.runWith(Sink.asPublisher(false))
+  def bodyAsPublisher(fanout: Boolean = false)(implicit materializer: ActorMaterializer): Publisher[ByteString] = {
+    bodyAsStream.runWith(Sink.asPublisher(fanout))
   }
 
-  // Env.blockingActorMaterializer
-  def rawBodyAsPublisher(implicit materializer: ActorMaterializer): Publisher[ByteString] = {
-    rawBodyAsStream.runWith(Sink.asPublisher(false))
+  def rawBodyAsPublisher(fanout: Boolean = false)(implicit materializer: ActorMaterializer): Publisher[ByteString] = {
+    rawBodyAsStream.runWith(Sink.asPublisher(fanout))
   }
 
   def header(name: String): Option[String] = Option(exchange.getRequestHeaders.getFirst(name))

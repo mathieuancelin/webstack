@@ -5,6 +5,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import scala.collection.JavaConversions._
 
 case class Configuration(underlying: Config) {
+
   private def readValue[T](path: String, supplier: => T): Option[T] = {
     try {
       Some(supplier)
