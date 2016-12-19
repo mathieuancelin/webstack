@@ -10,11 +10,12 @@ import io.undertow.util.HttpString
 import io.undertow.{Handlers, Undertow}
 import org.reactivecouchbase.webstack.actions.{Action, ReactiveActionHandler}
 import org.reactivecouchbase.webstack.env.Env
+import org.reactivecouchbase.webstrack.WebStack
 import org.reflections.Reflections
 import play.api.libs.json.Json
 
 import scala.collection.JavaConversions._
-import scala.util.Try
+import scala.util.{Success, Try}
 
 case class BootstrappedContext(undertow: Undertow, app: WebStackApp) {
   def stop {
@@ -94,16 +95,14 @@ class WebStackApp {
 
 object WebStack extends App {
 
-  def main(args: String*) {
-    Env.logger.trace("Scanning classpath looking for WebStackApp implementations")
-    new Reflections("").getSubTypesOf(classOf[WebStackApp]).headOption.map { serverClazz =>
-      Try {
-        Env.logger.info(s"Found WebStackApp class: ${serverClazz.getName}")
-        val context = serverClazz.newInstance()
-        startWebStackApp(context)
-      } get
-    }
-  }
+  Env.logger.trace("Scanning classpath looking for WebStackApp implementations")
+  new Reflections("").getSubTypesOf(classOf[WebStackApp]).headOption.map { serverClazz =>
+    Try {
+      Env.logger.info(s"Found WebStackApp class: ${serverClazz.getName}")
+      val context = serverClazz.newInstance()
+      startWebStackApp(context)
+    } get
+  }.getOrElse(Env.logger.error("No implementation of WebStackApp found :("))
 
   private[webstack] def startWebStackApp(webstackApp: WebStackApp, _port: Option[Int] = None): BootstrappedContext = {
     Env.logger.trace("Starting WebStackApp")

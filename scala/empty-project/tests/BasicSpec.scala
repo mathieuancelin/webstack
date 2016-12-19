@@ -1,6 +1,5 @@
 import java.util.concurrent.TimeUnit
 
-import Routes._
 import org.reactivecouchbase.webstack.{BootstrappedContext, ClassPathDirectory, WebStackApp}
 import org.reactivecouchbase.webstack.env.Env
 import org.reactivecouchbase.webstack.ws.WS
@@ -26,7 +25,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
   val port = 7002
 
   override protected def beforeAll(): Unit = {
-    server = Routes.start(Some(port))
+    server = new Routes().start(Some(port))
   }
 
   override protected def afterAll(): Unit = {

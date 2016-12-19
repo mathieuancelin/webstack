@@ -1,14 +1,9 @@
 import controllers._
 import org.reactivecouchbase.webstack.{ClassPathDirectory, WebStackApp}
 
-object Routes extends WebStackApp {
+class Routes extends WebStackApp {
 
   Get ->       "/" ->               HomeController.index
   Assets ->    "/assets" ->         ClassPathDirectory("public")
 
-}
-
-object MyApp extends App {
-
-  Routes.start()
 }

@@ -16,7 +16,7 @@
     <logger name="io.undertow.request" level="WARN"/>
     <logger name="org.reflections.Reflections" level="ERROR"/>
     <logger name="com.github.jknack.handlebars.internal.HbsParserFactory" level="WARN"/>
-    <logger name="application" level="INFO" />
+    <logger name="application" level="TRACE" />
 
     <root level="ALL">
         <appender-ref ref="STDOUT" />
