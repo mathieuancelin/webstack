@@ -10,7 +10,6 @@ import io.undertow.util.HttpString
 import io.undertow.{Handlers, Undertow}
 import org.reactivecouchbase.webstack.actions.{Action, ReactiveActionHandler}
 import org.reactivecouchbase.webstack.env.Env
-import org.reactivecouchbase.webstrack.WebStack
 import org.reflections.Reflections
 import play.api.libs.json.Json
 
