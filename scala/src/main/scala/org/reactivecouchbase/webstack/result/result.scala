@@ -101,9 +101,8 @@ object Result {
         val template: Template = handlebars.compile(name)
         TEMPLATES_CACHE.putIfAbsent(name, template)
       } get
-    } else {
-      TEMPLATES_CACHE.get(name)
     }
+    TEMPLATES_CACHE.get(name)
   }
 }
 

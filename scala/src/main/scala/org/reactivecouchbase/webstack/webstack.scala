@@ -59,12 +59,14 @@ class WebStackApp {
 
   def assets(url: String, dir: ClassPathDirectory): Unit = {
     Env.logger.debug(s"Add assets on $url -> ${dir.path}")
-    routingHandler.add("GET", url, resource(new ClassPathResourceManager(classOf[WebStackApp].getClassLoader, dir.path)))
+    routingHandler.setFallbackHandler(path().addPrefixPath(url, resource(new ClassPathResourceManager(classOf[WebStackApp].getClassLoader, dir.path))))
+    // routingHandler.add("GET", url, resource(new ClassPathResourceManager(classOf[WebStackApp].getClassLoader, dir.path)))
   }
 
   def assets(url: String, dir: FSDirectory): Unit = {
     Env.logger.debug(s"Add assets on $url -> ${dir.path}")
-    routingHandler.add("GET", url, resource(new FileResourceManager(dir.path, 0)))
+    routingHandler.setFallbackHandler(path().addPrefixPath(url, resource(new FileResourceManager(dir.path, 0))))
+    // routingHandler.add("GET", url, resource(new FileResourceManager(dir.path, 0)))
   }
 
   def beforeStart {}
@@ -75,7 +77,7 @@ class WebStackApp {
 
   def afterStop {}
 
-  def start: BootstrappedContext = WebStack.startWebStackApp(this)
+  def start(port: Option[Int] = None): BootstrappedContext = WebStack.startWebStackApp(this, port)
 
   val Connect = RootRoute(this, HttpMethods.CONNECT)
   val Delete  = RootRoute(this, HttpMethods.DELETE )
@@ -103,9 +105,9 @@ object WebStack extends App {
     }
   }
 
-  private[webstack] def startWebStackApp(webstackApp: WebStackApp): BootstrappedContext = {
+  private[webstack] def startWebStackApp(webstackApp: WebStackApp, _port: Option[Int] = None): BootstrappedContext = {
     Env.logger.trace("Starting WebStackApp")
-    val port = Env.configuration.getInt("webstack.port").getOrElse(9000)
+    val port = _port.orElse(Env.configuration.getInt("webstack.port")).getOrElse(9000)
     val host = Env.configuration.getString("webstack.host").getOrElse("0.0.0.0")
     val handler = webstackApp.routingHandler.setInvalidMethodHandler(new HttpHandler {
       override def handleRequest(ex: HttpServerExchange): Unit = {

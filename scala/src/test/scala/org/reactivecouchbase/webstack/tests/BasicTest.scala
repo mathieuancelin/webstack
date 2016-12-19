@@ -29,7 +29,7 @@ object RunnableRoutes extends WebStackApp with App {
   Post   ->    "/post" ->           MyController.testPost
   Assets ->    "/assets" ->         ClassPathDirectory("public")
 
-  start
+  start()
 }
 
 object MyController {
@@ -135,8 +135,10 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   var server: BootstrappedContext = _
 
+  val port = 7001
+
   override protected def beforeAll(): Unit = {
-    server = BasicTestSpecRoutes.start
+    server = BasicTestSpecRoutes.start(Some(port))
   }
 
   override protected def afterAll(): Unit = {
@@ -145,7 +147,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with simple text result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", 9000).addPathSegment("sayhello").call()
+      resp     <- WS.host("http://localhost", port).addPathSegment("sayhello").call()
       body     <- resp.body
     } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
