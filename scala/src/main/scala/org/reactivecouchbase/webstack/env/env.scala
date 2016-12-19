@@ -49,6 +49,8 @@ object Env {
 
   // offered to the internals of websockets
   private val websocketSystem = ActorSystem("websocket-system", configuration.underlying.atPath("webstack.systems.websocket").withFallback(ConfigFactory.empty()))
+  private[webstack] val websocketExecutionContext = websocketSystem.dispatcher
+  private[webstack] val websocketMaterializer = ActorMaterializer.create(websocketSystem)
   private[webstack] val websocketHttp = Http.get(websocketSystem)
 
   Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {

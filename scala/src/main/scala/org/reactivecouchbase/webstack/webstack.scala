@@ -10,6 +10,7 @@ import io.undertow.util.HttpString
 import io.undertow.{Handlers, Undertow}
 import org.reactivecouchbase.webstack.actions.{Action, ReactiveActionHandler}
 import org.reactivecouchbase.webstack.env.Env
+import org.reactivecouchbase.webstack.websocket.{ReactiveWebSocketHandler, WebSocketAction}
 import org.reflections.Reflections
 import play.api.libs.json.Json
 
@@ -23,7 +24,7 @@ case class BootstrappedContext(undertow: Undertow, app: WebStackApp) {
       undertow.stop
       app.afterStop
     } catch {
-      case e: Exception => e.printStackTrace
+      case e: Exception => Env.logger.error("Error while stopping server")
     }
   }
 }
@@ -32,8 +33,16 @@ case class RootRoute(app: WebStackApp, method: HttpMethod) {
   def ->(template: String) = TemplateRoute(app, method, template)
 }
 
+case class RootWSRoute(app: WebStackApp) {
+  def ->(template: String) = TemplateWSRoute(app, template)
+}
+
 case class TemplateRoute(app: WebStackApp, method: HttpMethod, template: String) {
   def ->(action: => Action) = app.route(method, template, action)
+}
+
+case class TemplateWSRoute(app: WebStackApp, template: String) {
+  def ->(action: => WebSocketAction) = app.websocketRoute(template, action)
 }
 
 case class AssetsRoute(app: WebStackApp) {
@@ -69,6 +78,10 @@ class WebStackApp {
     // routingHandler.add("GET", url, resource(new FileResourceManager(dir.path, 0)))
   }
 
+  def websocketRoute(url: String, action: => WebSocketAction) {
+    routingHandler.add("GET", url, Handlers.websocket(new ReactiveWebSocketHandler(action)))
+  }
+
   def beforeStart {}
 
   def afterStart {}
@@ -89,7 +102,7 @@ class WebStackApp {
   val Put     = RootRoute(this, HttpMethods.PUT    )
   val Trace   = RootRoute(this, HttpMethods.TRACE  )
   val Assets  = AssetsRoute(this)
-  // val Ws      = ???
+  val Ws      = RootWSRoute(this)
 }
 
 object WebStack extends App {
