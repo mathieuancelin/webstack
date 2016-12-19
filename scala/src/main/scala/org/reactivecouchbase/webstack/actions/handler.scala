@@ -9,7 +9,7 @@ import play.api.libs.json.Json
 
 import scala.collection.JavaConversions._
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 object ReactiveActionHandler {
   def apply(action: => Action): ReactiveActionHandler = new ReactiveActionHandler(action)
@@ -51,11 +51,12 @@ class ReactiveActionHandler(action: => Action) extends HttpHandler {
                 })(Keep.both[Any, Future[Done]]).run()(Env.blockingActorMaterializer)
             result.materializedValue.trySuccess(first)
             def endExchange() = {
-              try {
+              Try {
                 responseChannel.flush()
                 exchange.endExchange()
-              } catch {
-                case e: Exception => Env.logger.error("Error while ending exchange", e)
+              } match {
+                case Success(e) => e
+                case Failure(e) => Env.logger.error("Error while ending exchange", e)
               }
             }
             second.andThen {

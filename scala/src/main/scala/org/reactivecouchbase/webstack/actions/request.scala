@@ -3,7 +3,7 @@ package org.reactivecouchbase.webstack.actions
 import java.net.InetSocketAddress
 
 import akka.http.scaladsl.coding.Gzip
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorMaterializer, Materializer}
 import akka.stream.scaladsl.{Sink, Source, StreamConverters}
 import akka.util.ByteString
 import io.undertow.server.HttpServerExchange
@@ -90,13 +90,13 @@ case class RequestContext(private val state: Map[String, AnyRef], private val un
   def exchange: HttpServerExchange = underlying
 
   // Env.blockingExecutor, Env.blockingActorMaterializer
-  def body(implicit ec: ExecutionContext, materializer: ActorMaterializer): Future[RequestBody] = {
+  def body(implicit ec: ExecutionContext, materializer: Materializer): Future[RequestBody] = {
     bodyAsStream.runFold(ByteString.empty)(_.concat(_)).map(RequestBody.apply)
   }
 
   def body[T](bodyParser: (RequestHeaders, Source[ByteString, Any]) => Future[T]): Future[T] = bodyParser.apply(headers, bodyAsStream)
 
-  def body[T](bodyParser: (RequestHeaders, Publisher[ByteString]) => Future[T])(implicit materializer: ActorMaterializer): Future[T] = {
+  def body[T](bodyParser: (RequestHeaders, Publisher[ByteString]) => Future[T])(implicit materializer: Materializer): Future[T] = {
     bodyParser.apply(headers, bodyAsPublisher())
   }
 
@@ -116,11 +116,11 @@ case class RequestContext(private val state: Map[String, AnyRef], private val un
     })
   }
 
-  def bodyAsPublisher(fanout: Boolean = false)(implicit materializer: ActorMaterializer): Publisher[ByteString] = {
+  def bodyAsPublisher(fanout: Boolean = false)(implicit materializer: Materializer): Publisher[ByteString] = {
     bodyAsStream.runWith(Sink.asPublisher(fanout))
   }
 
-  def rawBodyAsPublisher(fanout: Boolean = false)(implicit materializer: ActorMaterializer): Publisher[ByteString] = {
+  def rawBodyAsPublisher(fanout: Boolean = false)(implicit materializer: Materializer): Publisher[ByteString] = {
     rawBodyAsStream.runWith(Sink.asPublisher(fanout))
   }
 
@@ -132,16 +132,16 @@ case class RequestContext(private val state: Map[String, AnyRef], private val un
 
 case class RequestBody(bodyAsBytes: ByteString) {
   val bodyAsString = bodyAsBytes.utf8String
-  def asBytes: ByteString = bodyAsBytes
-  def asString: String = bodyAsString
-  def asJson: JsValue = Json.parse(asString)
-  def asSafeJson: Try[JsValue] = Try(Json.parse(asString))
-  def asXml: Elem = scala.xml.XML.loadString(asString)
-  def asSafeXml: Try[Elem] = Try(scala.xml.XML.loadString(asString))
-  def asSafeURLForm: Try[Map[String, List[String]]] = Try(asURLForm)
-  def asURLForm: Map[String, List[String]] = {
+  def bytes: ByteString = bodyAsBytes
+  def string: String = bodyAsString
+  def json: JsValue = Json.parse(string)
+  def safeJson: Try[JsValue] = Try(Json.parse(string))
+  def xml: Elem = scala.xml.XML.loadString(string)
+  def safeXml: Try[Elem] = Try(scala.xml.XML.loadString(string))
+  def safeUrlFrom: Try[Map[String, List[String]]] = Try(urlForm)
+  def urlForm: Map[String, List[String]] = {
     var form = Map.empty[String, List[String]]
-    val body: String = asString
+    val body: String = string
     val parts: Seq[String] = body.split("&").toSeq
     parts.foreach { part =>
       val key: String = part.split("=")(0)

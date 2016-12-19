@@ -3,23 +3,16 @@ package org.reactivecouchbase.webstack.config
 import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.collection.JavaConversions._
+import scala.util.Try
 
 case class Configuration(underlying: Config) {
 
   private def readValue[T](path: String, supplier: => T): Option[T] = {
-    try {
-      Some(supplier)
-    } catch {
-      case e: Exception => None
-    }
+    Try(Some(supplier)).getOrElse(None)
   }
 
   private def readList[T](path: String, supplier: => Seq[T]): Seq[T] = {
-    try {
-      Some(supplier).getOrElse(Seq.empty[T])
-    } catch {
-      case e: Exception => Seq.empty[T]
-    }
+    Try(Some(supplier).getOrElse(Seq.empty[T])).getOrElse(Seq.empty[T])
   }
 
   def getString(path: String): Option[String] = {

@@ -1,22 +1,23 @@
 package org.reactivecouchbase.webstack
 
+import java.io.File
+
 import akka.http.scaladsl.model.{HttpMethod, HttpMethods}
-import com.google.common.base.Throwables
 import io.undertow.Handlers._
-import io.undertow.server.handlers.resource.ClassPathResourceManager
+import io.undertow.server.handlers.resource.{ClassPathResourceManager, FileResourceManager}
 import io.undertow.server.{HttpHandler, HttpServerExchange}
 import io.undertow.util.HttpString
 import io.undertow.{Handlers, Undertow}
 import org.reactivecouchbase.webstack.actions.{Action, ReactiveActionHandler}
 import org.reactivecouchbase.webstack.env.Env
 import org.reflections.Reflections
-import org.slf4j.LoggerFactory
 import play.api.libs.json.Json
 
 import scala.collection.JavaConversions._
+import scala.util.Try
 
 case class BootstrappedContext(undertow: Undertow, app: WebStackApp) {
-  def stopApp {
+  def stop {
     try {
       app.beforeStop
       undertow.stop
@@ -35,22 +36,36 @@ case class TemplateRoute(app: WebStackApp, method: HttpMethod, template: String)
   def ->(action: => Action) = app.route(method, template, action)
 }
 
+case class AssetsRoute(app: WebStackApp) {
+  def ->(path: String) = AssetsRouteWithPath(app, path)
+}
+
+case class AssetsRouteWithPath(app: WebStackApp, path: String) {
+  def ->(cpDir: ClassPathDirectory) = app.assets(path, cpDir)
+  def ->(fsDir: FSDirectory) =        app.assets(path, fsDir)
+}
+
+case class ClassPathDirectory(path: String)
+case class FSDirectory(path: File)
+
 class WebStackApp {
 
   private[webstack] val routingHandler = Handlers.routing()
 
   def route(method: HttpMethod, url: String, action: => Action) {
+    Env.logger.debug(s"Add route on ${method.value} -> $url")
     routingHandler.add(method.name, url, ReactiveActionHandler(action))
   }
 
-  // def r(method: HttpMethod, url: String, action: => Action) = route(method, url, action)
-  // def $(method: HttpMethod, url: String, action: => Action) = route(method, url, action)
-  // def $(method: HttpMethod, url: String, action: => Action) = route(method, url, action)
-  // def r(method: HttpMethod, url: String, action: WebSocketActionSupplier) = route(method, url, action)
-  // def route(method: HttpMethod, url: String, action: WebSocketActionSupplier) {
-  //   routingHandler.add(method.name, url, Handlers.websocket(new ReactiveWebSocketHandler(action)))
-  // }
-  // def defineRoutes {}
+  def assets(url: String, dir: ClassPathDirectory): Unit = {
+    Env.logger.debug(s"Add assets on $url -> ${dir.path}")
+    routingHandler.add("GET", url, resource(new ClassPathResourceManager(classOf[WebStackApp].getClassLoader, dir.path)))
+  }
+
+  def assets(url: String, dir: FSDirectory): Unit = {
+    Env.logger.debug(s"Add assets on $url -> ${dir.path}")
+    routingHandler.add("GET", url, resource(new FileResourceManager(dir.path, 0)))
+  }
 
   def beforeStart {}
 
@@ -62,15 +77,17 @@ class WebStackApp {
 
   def start: BootstrappedContext = WebStack.startWebStackApp(this)
 
-  val CONNECT = RootRoute(this, HttpMethods.CONNECT)
-  val DELETE  = RootRoute(this, HttpMethods.DELETE )
-  val GET     = RootRoute(this, HttpMethods.GET    )
-  val HEAD    = RootRoute(this, HttpMethods.HEAD   )
-  val OPTIONS = RootRoute(this, HttpMethods.OPTIONS)
-  val PATCH   = RootRoute(this, HttpMethods.PATCH  )
-  val POST    = RootRoute(this, HttpMethods.POST   )
-  val PUT     = RootRoute(this, HttpMethods.PUT    )
-  val TRACE   = RootRoute(this, HttpMethods.TRACE  )
+  val Connect = RootRoute(this, HttpMethods.CONNECT)
+  val Delete  = RootRoute(this, HttpMethods.DELETE )
+  val Get     = RootRoute(this, HttpMethods.GET    )
+  val Head    = RootRoute(this, HttpMethods.HEAD   )
+  val Options = RootRoute(this, HttpMethods.OPTIONS)
+  val Patch   = RootRoute(this, HttpMethods.PATCH  )
+  val Post    = RootRoute(this, HttpMethods.POST   )
+  val Put     = RootRoute(this, HttpMethods.PUT    )
+  val Trace   = RootRoute(this, HttpMethods.TRACE  )
+  val Assets  = AssetsRoute(this)
+  // val Ws      = ???
 }
 
 object WebStack extends App {
@@ -78,13 +95,11 @@ object WebStack extends App {
   def main(args: String*) {
     Env.logger.trace("Scanning classpath looking for WebStackApp implementations")
     new Reflections("").getSubTypesOf(classOf[WebStackApp]).headOption.map { serverClazz =>
-      try {
+      Try {
         Env.logger.info(s"Found WebStackApp class: ${serverClazz.getName}")
         val context = serverClazz.newInstance()
         startWebStackApp(context)
-      } catch {
-        case e: Exception => throw Throwables.propagate(e)
-      }
+      } get
     }
   }
 
@@ -92,7 +107,6 @@ object WebStack extends App {
     Env.logger.trace("Starting WebStackApp")
     val port = Env.configuration.getInt("webstack.port").getOrElse(9000)
     val host = Env.configuration.getString("webstack.host").getOrElse("0.0.0.0")
-    // webstackApp.defineRoutes
     val handler = webstackApp.routingHandler.setInvalidMethodHandler(new HttpHandler {
       override def handleRequest(ex: HttpServerExchange): Unit = {
         ex.setStatusCode(400)
@@ -101,7 +115,7 @@ object WebStack extends App {
           "error" -> s"Invalid Method ${ex.getRequestMethod} on uri ${ex.getRequestURI}"
         )))
       }
-    }).setFallbackHandler(path.addPrefixPath("/assets", resource(new ClassPathResourceManager(classOf[WebStackApp].getClassLoader, "public"))))
+    })
     Env.logger.trace("Starting Undertow")
     val server = Undertow
       .builder()
@@ -116,7 +130,7 @@ object WebStack extends App {
     val bootstrapedContext = BootstrappedContext(server, webstackApp)
     Env.logger.trace("Registering shutdown hook")
     Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
-      override def run(): Unit = bootstrapedContext.stopApp
+      override def run(): Unit = bootstrapedContext.stop
     }))
     Env.logger.trace("Init done")
     bootstrapedContext

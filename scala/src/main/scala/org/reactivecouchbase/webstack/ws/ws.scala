@@ -20,16 +20,21 @@ import scala.xml.{Elem, XML}
 
 object WS {
 
-  def call(host: String, port: Int = 80, request: HttpRequest)(implicit ec: ExecutionContext, materializer: Materializer): Future[WSResponse] = {
-    val connectionFlow = Env.wsHttp.outgoingConnection(host, port)
-    val responseFuture = Source.single(request).via(connectionFlow).runWith(Sink.head[HttpResponse])
-    responseFuture.map(WSResponse.apply)
-  }
+  // def call(host: String, port: Int = 80, request: HttpRequest)(implicit ec: ExecutionContext, materializer: Materializer): Future[WSResponse] = {
+  //   val connectionFlow = Env.wsHttp.outgoingConnection(host, port)
+  //   val responseFuture = Source.single(request).via(connectionFlow).runWith(Sink.head[HttpResponse])
+  //   responseFuture.map(WSResponse.apply)
+  // }
 
   def host(host: String, port: Int = 80): WSRequest = {
     val system: ActorSystem = Env.wsSystem
-    val connectionFlow = Env.wsHttp.outgoingConnection(host, port)
-    WSRequest(system, connectionFlow, host, port)
+    if (host.startsWith("https")) {
+      val connectionFlow = Env.wsHttp.outgoingConnectionHttps(host.replace("http://", "").replace("https://", ""), port)
+      WSRequest(system, connectionFlow, host, port)
+    } else {
+      val connectionFlow = Env.wsHttp.outgoingConnection(host.replace("http://", "").replace("https://", ""), port)
+      WSRequest(system, connectionFlow, host, port)
+    }
   }
 
   // def websocketHost(host: String): WebSocketClientRequest = {

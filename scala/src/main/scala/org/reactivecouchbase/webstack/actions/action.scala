@@ -36,15 +36,13 @@ object Action {
 class Action(actionStep: ActionStep, rcBuilder: HttpServerExchange => RequestContext, block: RequestContext => Future[Result], val ec: ExecutionContext) {
   def run(httpServerExchange: HttpServerExchange): Future[Result] = {
     implicit val e = ec
-    try {
+    Try {
       val rc = rcBuilder.apply(httpServerExchange)
       val result = actionStep.innerInvoke(rc, block)
       result.recoverWith {
         case t => Future.successful(Action.transformError(t, rc))
       }
-    } catch {
-      case e: Exception => Future.failed(e)
-    }
+    } get
   }
 }
 

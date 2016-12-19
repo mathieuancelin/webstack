@@ -21,6 +21,7 @@ import play.api.libs.json.{JsValue, Json}
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.reflect.ClassTag
+import scala.util.Try
 import scala.xml.{Elem, XML}
 
 object Results {
@@ -96,12 +97,10 @@ object Result {
   private val TEMPLATES_CACHE: ConcurrentMap[String, Template] = new ConcurrentHashMap[String, Template]
   private def getTemplate(name: String): Template = {
     if (!TEMPLATES_CACHE.containsKey(name)) {
-      try {
+      Try {
         val template: Template = handlebars.compile(name)
         TEMPLATES_CACHE.putIfAbsent(name, template)
-      } catch {
-        case e: Exception => throw Throwables.propagate(e)
-      }
+      } get
     } else {
       TEMPLATES_CACHE.get(name)
     }
@@ -203,15 +202,13 @@ case class Result(status: Int, source: Source[ByteString, _], contentType: Strin
   }
 
   def template(name: String, params: Map[String, _]): Result = {
-    try {
+    Try {
       val p: java.util.Map[String, _] = collection.JavaConversions.mapAsJavaMap(params)
       val context: Context = Context.newBuilder(new Object()).combine(p).build
       val template: String = Result.getTemplate(name).apply(context)
       val source: Source[ByteString, Any] = Source.single(ByteString.fromString(template))
       copy(source = source, contentType = MediaType.TEXT_HTML_VALUE)
-    } catch {
-      case e: Exception => throw Throwables.propagate(e)
-    }
+    } get
   }
 
   def chunked(source: Publisher[ByteString]): Result = chunked(Source.fromPublisher(source))
