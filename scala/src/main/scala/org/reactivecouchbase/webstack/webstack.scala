@@ -14,7 +14,7 @@ import org.reflections.Reflections
 import play.api.libs.json.Json
 
 import scala.collection.JavaConversions._
-import scala.util.{Success, Try}
+import scala.util.Try
 
 case class BootstrappedContext(undertow: Undertow, app: WebStackApp) {
   def stop {

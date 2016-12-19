@@ -33,25 +33,23 @@ object Env {
   private val DEFAULT = Configuration(ConfigFactory.load)
   private val APP_LOGGER: Logger = LoggerFactory.getLogger("application")
 
-  private val system = ActorSystem("global-system", configuration.underlying.atPath("webstack.systems.global").withFallback(ConfigFactory.empty()))
+  private val system = ActorSystem("global-system",
+    configuration.underlying.atPath("webstack.systems.global").withFallback(ConfigFactory.empty()))
   private val materializer = ActorMaterializer.create(system)
   private val executor = system.dispatcher
   // offered to the internals of actions
-  private[webstack] val blockingSystem = ActorSystem("blocking-system", configuration.underlying.atPath("webstack.systems.blocking").withFallback(ConfigFactory.empty()))
+  private[webstack] val blockingSystem = ActorSystem("blocking-system",
+    configuration.underlying.atPath("webstack.systems.blocking").withFallback(ConfigFactory.empty()))
   private[webstack] val blockingActorMaterializer = ActorMaterializer.create(blockingSystem)
   private[webstack] val blockingExecutor = blockingSystem.dispatcher
 
   // offered to the internals of ws
-  private[webstack] val wsSystem = ActorSystem("ws-system", configuration.underlying.atPath("webstack.systems.ws").withFallback(ConfigFactory.empty()))
-  // private[webstack] val wsClientActorMaterializer = ActorMaterializer.create(wsSystem)
-  // private[webstack] val wsExecutor = wsSystem.dispatcher
+  private val wsSystem = ActorSystem("ws-system", configuration.underlying.atPath("webstack.systems.ws").withFallback(ConfigFactory.empty()))
   private[webstack] val wsHttp = Http.get(wsSystem)
 
   // offered to the internals of websockets
-  // private[websocket] val websocketSystem = ActorSystem("websocket-system", configuration.underlying.atPath("webstack.systems.websocket").withFallback(ConfigFactory.empty()))
-  // private[websocket] val websocketActorMaterializer = ActorMaterializer.create(websocketSystem)
-  // private[websocket] val websocketExecutor = websocketSystem.dispatcher
-  // private[websocket] val websocketHttp = Http.get(websocketSystem)
+  private val websocketSystem = ActorSystem("websocket-system", configuration.underlying.atPath("webstack.systems.websocket").withFallback(ConfigFactory.empty()))
+  private[webstack] val websocketHttp = Http.get(websocketSystem)
 
   Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
     override def run(): Unit = {
