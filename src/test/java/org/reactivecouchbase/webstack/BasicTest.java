@@ -41,15 +41,15 @@ public class BasicTest {
 
     private static BootstrappedContext server;
 
-    // @BeforeClass
-    // public static void setUp() {
-    //     server = TestApplication.run();
-    // }
+    @BeforeClass
+    public static void setUp() {
+        server = TestApplication.run();
+    }
 
-    // @AfterClass
-    // public static void tearDown() {
-    //     server.stopApp();
-    // }
+    @AfterClass
+    public static void tearDown() {
+        server.stopApp();
+    }
 
     @Test
     public void testTextResult() {
@@ -65,7 +65,6 @@ public class BasicTest {
         Assert.assertEquals("Hello World!\n", body._1);
         Assert.assertEquals("text/plain", body._2.get("Content-Type").flatMap(Traversable::headOption).getOrElse("none"));
     }
-
 
     @Test
     public void testPathParamResult() throws Exception {

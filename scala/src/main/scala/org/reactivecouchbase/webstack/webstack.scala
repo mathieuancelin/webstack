@@ -1,6 +1,7 @@
 package org.reactivecouchbase.webstack
 
 import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
 
 import akka.http.scaladsl.model.{HttpMethod, HttpMethods}
 import io.undertow.Handlers._
@@ -18,40 +19,59 @@ import scala.collection.JavaConversions._
 import scala.util.Try
 
 case class BootstrappedContext(undertow: Undertow, app: WebStackApp) {
+
+  private val stopped = new AtomicBoolean(false)
+
+  Env.logger.trace("Registering shutdown hook")
+  Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
+    override def run(): Unit = stop
+  }))
+
   def stop {
-    try {
-      app.beforeStop
-      undertow.stop
-      app.afterStop
-    } catch {
-      case e: Exception => Env.logger.error("Error while stopping server")
+    if (!stopped.get()) {
+      try {
+        stopped.getAndSet(true)
+        app.beforeStop
+        undertow.stop
+        app.afterStop
+        Env.stopEnv()
+      } catch {
+        case e: Exception => Env.logger.error("Error while stopping server")
+      }
     }
   }
 }
 
 case class RootRoute(app: WebStackApp, method: HttpMethod) {
   def ->(template: String) = TemplateRoute(app, method, template)
+  def ⟶(template: String) = TemplateRoute(app, method, template)
 }
 
 case class RootWSRoute(app: WebStackApp) {
   def ->(template: String) = TemplateWSRoute(app, template)
+  def ⟶(template: String) = TemplateWSRoute(app, template)
 }
 
 case class TemplateRoute(app: WebStackApp, method: HttpMethod, template: String) {
   def ->(action: => Action) = app.route(method, template, action)
+  def ⟶(action: => Action) = app.route(method, template, action)
 }
 
 case class TemplateWSRoute(app: WebStackApp, template: String) {
   def ->(action: => WebSocketAction) = app.websocketRoute(template, action)
+  def ⟶(action: => WebSocketAction) = app.websocketRoute(template, action)
 }
 
 case class AssetsRoute(app: WebStackApp) {
   def ->(path: String) = AssetsRouteWithPath(app, path)
+  def ⟶(path: String) = AssetsRouteWithPath(app, path)
 }
 
 case class AssetsRouteWithPath(app: WebStackApp, path: String) {
   def ->(cpDir: ClassPathDirectory) = app.assets(path, cpDir)
+  def ⟶(cpDir: ClassPathDirectory) = app.assets(path, cpDir)
   def ->(fsDir: FSDirectory) =        app.assets(path, fsDir)
+  def ⟶(fsDir: FSDirectory) =        app.assets(path, fsDir)
 }
 
 case class ClassPathDirectory(path: String)
@@ -141,10 +161,6 @@ object WebStack extends App {
     Env.logger.trace("Undertow started")
     Env.logger.info("Running WebStack on http://" + host + ":" + port)
     val bootstrapedContext = BootstrappedContext(server, webstackApp)
-    Env.logger.trace("Registering shutdown hook")
-    Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
-      override def run(): Unit = bootstrapedContext.stop
-    }))
     Env.logger.trace("Init done")
     bootstrapedContext
   }

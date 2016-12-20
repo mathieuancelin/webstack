@@ -53,13 +53,15 @@ object Env {
   private[webstack] val websocketMaterializer = ActorMaterializer.create(websocketSystem)
   private[webstack] val websocketHttp = Http.get(websocketSystem)
 
+  private[webstack] def stopEnv() = {
+    system.terminate()
+    blockingSystem.terminate()
+    wsSystem.terminate()
+    websocketSystem.terminate()
+  }
+
   Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
-    override def run(): Unit = {
-      system.terminate()
-      blockingSystem.terminate()
-      wsSystem.terminate()
-      // websocketSystem.terminate()
-    }
+    override def run(): Unit = stopEnv()
   }))
 
   def logger: Logger = APP_LOGGER
