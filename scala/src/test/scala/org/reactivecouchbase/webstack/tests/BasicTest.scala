@@ -10,8 +10,9 @@ import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.stream.actor.{ActorPublisher, ActorPublisherMessage}
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import org.reactivecouchbase.webstack.{BootstrappedContext, ClassPathDirectory, WebStackApp}
-import org.reactivecouchbase.webstack.actions.Action
+import org.reactivecouchbase.webstack.actions.{Action, ActionStep}
 import org.reactivecouchbase.webstack.env.Env
+import org.reactivecouchbase.webstack.result.Results
 import org.reactivecouchbase.webstack.result.Results._
 import org.reactivecouchbase.webstack.websocket.{ActorFlow, WebSocketAction, WebSocketContext}
 import org.reactivecouchbase.webstack.ws.WS
@@ -46,7 +47,14 @@ object MyController {
   implicit val mat = Env.globalMaterializer
   implicit val system = Env.globalActorSystem
 
-  def index = Action.sync { ctx =>
+  val ApiKeyAction = ActionStep.from { (ctx, block) =>
+    ctx.header("Api-Key") match {
+      case Some(value) if value == "12345" => block(ctx)
+      case None => Future.successful(Results.Unauthorized.json(Json.obj("error" -> "you have to provide an Api-Key")))
+    }
+  }
+
+  def index = ApiKeyAction.sync { ctx =>
     Ok.text("Hello World!\n")
   }
 
@@ -66,7 +74,7 @@ object MyController {
     result
   }
 
-  def stream2 = Action.sync { ctx =>
+  def stream2 = ApiKeyAction.sync { ctx =>
     val result = Ok.stream(SSEActor.source).as("text/event-stream")
     result.matValue[ActorRef].andThen {
       case Success(ref) => ref ! "START"
@@ -74,27 +82,27 @@ object MyController {
     result
   }
 
-  def text = Action.sync { ctx =>
+  def text = ApiKeyAction.sync { ctx =>
     Ok.text("Hello World!\n")
   }
 
-  def hello = Action.sync { ctx =>
+  def hello = ApiKeyAction.sync { ctx =>
     Ok.text("Hello " + ctx.pathParam("name").getOrElse("Unknown") + "!\n")
   }
 
-  def hugeText = Action.sync { ctx =>
+  def hugeText = ApiKeyAction.sync { ctx =>
     Ok.text(HUGE_TEXT + "\n")
   }
 
-  def json = Action.sync { ctx =>
+  def json = ApiKeyAction.sync { ctx =>
     Ok.json(Json.obj("message" -> "Hello World!"))
   }
 
-  def html = Action.sync { ctx =>
+  def html = ApiKeyAction.sync { ctx =>
     Ok.html("<h1>Hello World!</h1>")
   }
 
-  def template = Action.sync { ctx =>
+  def template = ApiKeyAction.sync { ctx =>
     Ok.template("hello", Map("name" -> ctx.queryParam("who").getOrElse("Mathieu")))
   }
 
@@ -286,7 +294,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with simple text result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("sayhello").call()
+      resp     <- WS.host("http://localhost", port).addPathSegment("sayhello").withHeader("Api-Key" -> "12345").call()
       body     <- resp.body
     } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
@@ -297,7 +305,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with a huge text result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("huge").call()
+      resp     <- WS.host("http://localhost", port).addPathSegment("huge").withHeader("Api-Key" -> "12345").call()
       body     <- resp.body
     } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
@@ -348,7 +356,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with a path param result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("hello").addPathSegment("Mathieu").call()
+      resp     <- WS.host("http://localhost", port).addPathSegment("hello").addPathSegment("Mathieu").withHeader("Api-Key" -> "12345").call()
       body     <- resp.body
     } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
@@ -359,7 +367,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with simple json result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("json").call()
+      resp     <- WS.host("http://localhost", port).addPathSegment("json").withHeader("Api-Key" -> "12345").call()
       body     <- resp.body
     } yield (body.json, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
@@ -370,7 +378,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with simple html result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("html").call()
+      resp     <- WS.host("http://localhost", port).addPathSegment("html").withHeader("Api-Key" -> "12345").call()
       body     <- resp.body
     } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
@@ -381,7 +389,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with simple template result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("template").withQueryParam("who", "Billy").call()
+      resp     <- WS.host("http://localhost", port).addPathSegment("template").withQueryParam("who", "Billy").withHeader("Api-Key" -> "12345").call()
       body     <- resp.body
     } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
