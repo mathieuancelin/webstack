@@ -430,8 +430,8 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to consume external websocket" in {
     val sink = Sink.head[Message]
-    val source: Source[Message, Cancellable] = jsonSource(Json.obj("hello" ->"world"), 100)
-    val flow: Flow[Message, Message, Future[Message]] = Flow.fromSinkAndSourceMat(sink, source)(Keep.left[Future[Message], Cancellable])
+    val source = jsonSource(Json.obj("hello" ->"world"), 100)
+    val flow = Flow.fromSinkAndSourceMat(sink, source)(Keep.left[Future[Message], Cancellable])
     val future = WS.websocketHost("ws://echo.websocket.org/").call(flow).materialized.map { message =>
       Json.parse(message.asTextMessage.getStrictText).as[JsObject]
     }
@@ -441,7 +441,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with a websocket result" in {
     val sink = Sink.head[Message]
-    val source: Source[Message, Cancellable] = jsonSource(Json.obj("hello" ->"world"), 100)
+    val source = jsonSource(Json.obj("hello" ->"world"), 100)
     val flow: Flow[Message, Message, Future[Message]] = Flow.fromSinkAndSourceMat(sink, source)(Keep.left[Future[Message], Cancellable])
     val future = WS.websocketHost(s"ws://localhost:$port").addPathSegment("websocket").addPathSegment("Mathieu").call(flow).materialized.map { message =>
       Json.parse(message.asTextMessage.getStrictText).as[JsObject]
@@ -454,7 +454,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with a websocket result that ping 1" in {
     val sink = Sink.head[Message]
-    val source: Source[Message, Cancellable] = jsonSource(Json.obj("hello" ->"world"), 100)
+    val source = jsonSource(Json.obj("hello" ->"world"), 100)
     val flow: Flow[Message, Message, Future[Message]] = Flow.fromSinkAndSourceMat(sink, source)(Keep.left[Future[Message], Cancellable])
     val future = WS.websocketHost(s"ws://localhost:$port").addPathSegment("websocketping").call(flow).materialized.map  { message =>
       Json.parse(message.asTextMessage.getStrictText).as[JsObject]
@@ -474,7 +474,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with a simple websocket result" in {
     val sink = Sink.head[Message]
-    val source: Source[Message, Cancellable] = jsonSource(Json.obj("hello" ->"world"), 100)
+    val source = jsonSource(Json.obj("hello" ->"world"), 100)
     val flow: Flow[Message, Message, Future[Message]] = Flow.fromSinkAndSourceMat(sink, source)(Keep.left[Future[Message], Cancellable])
     val future = WS.websocketHost(s"ws://localhost:$port").addPathSegment("websocketsimple").call(flow).materialized.map { message =>
       Json.parse(message.asTextMessage.getStrictText).as[JsObject]
