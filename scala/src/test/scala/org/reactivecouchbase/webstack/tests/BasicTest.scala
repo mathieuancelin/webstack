@@ -23,23 +23,26 @@ import scala.concurrent.{Await, Future, Promise}
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.util.Success
 
-/*object RunnableRoutes extends WebStackApp with App {
+object BasicTestSpecRoutes extends WebStackApp {
 
-  Get    ⟶   "/hello/{name}" ⟶   MyController.hello
-  Get    ⟶   "/sayhello"     ⟶   MyController.index
-  Get    ⟶   "/sse"          ⟶   MyController.stream
-  Get    ⟶   "/test"         ⟶   MyController.text
-  Get    ⟶   "/huge"         ⟶   MyController.hugeText
-  Get    ⟶   "/json"         ⟶   MyController.json
-  Get    ⟶   "/html"         ⟶   MyController.html
-  Get    ⟶   "/template"     ⟶   MyController.template
-  Get    ⟶   "/ws"           ⟶   MyController.testWS
-  Get    ⟶   "/ws2"          ⟶   MyController.testWS2
-  Post   ⟶   "/post"         ⟶   MyController.testPost
-  Assets ⟶   "/assets"       ⟶   ClassPathDirectory("public")
+  Get    ⟶   "/hello/{name}"      ⟶   MyController.hello
+  Get    ⟶   "/sayhello"          ⟶   MyController.index
+  Get    ⟶   "/sse"               ⟶   MyController.stream
+  Get    ⟶   "/sse2"              ⟶   MyController.stream2
+  Get    ⟶   "/test"              ⟶   MyController.text
+  Get    ⟶   "/huge"              ⟶   MyController.hugeText
+  Get    ⟶   "/json"              ⟶   MyController.json
+  Get    ⟶   "/html"              ⟶   MyController.html
+  Get    ⟶   "/template"          ⟶   MyController.template
+  Get    ⟶   "/ws"                ⟶   MyController.testWS
+  Get    ⟶   "/ws2"               ⟶   MyController.testWS2
+  Post   ⟶   "/post"              ⟶   MyController.testPost
+  Ws     ⟶   "/websocketping"     ⟶   MyController.webSocketPing
+  Ws     ⟶   "/websocketsimple"   ⟶   MyController.simpleWebsocket
+  Ws     ⟶   "/websocket/{id}"    ⟶   MyController.webSocketWithContext
+  Assets ⟶   "/assets"            ⟶   ClassPathDirectory("public")
 
-  start()
-}*/
+}
 
 object MyController {
 
@@ -252,27 +255,6 @@ object SpecImplicits {
   }
 }
 
-object BasicTestSpecRoutes extends WebStackApp {
-
-  Get    ⟶   "/hello/{name}"      ⟶   MyController.hello
-  Get    ⟶   "/sayhello"          ⟶   MyController.index
-  Get    ⟶   "/sse"               ⟶   MyController.stream
-  Get    ⟶   "/sse2"              ⟶   MyController.stream2
-  Get    ⟶   "/test"              ⟶   MyController.text
-  Get    ⟶   "/huge"              ⟶   MyController.hugeText
-  Get    ⟶   "/json"              ⟶   MyController.json
-  Get    ⟶   "/html"              ⟶   MyController.html
-  Get    ⟶   "/template"          ⟶   MyController.template
-  Get    ⟶   "/ws"                ⟶   MyController.testWS
-  Get    ⟶   "/ws2"               ⟶   MyController.testWS2
-  Post   ⟶   "/post"              ⟶   MyController.testPost
-  Ws     ⟶   "/websocketping"     ⟶   MyController.webSocketPing
-  Ws     ⟶   "/websocketsimple"   ⟶   MyController.simpleWebsocket
-  Ws     ⟶   "/websocket/{id}"    ⟶   MyController.webSocketWithContext
-  Assets ⟶   "/assets"            ⟶   ClassPathDirectory("public")
-
-}
-
 class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   import SpecImplicits._
@@ -453,7 +435,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
     val future = WS.websocketHost("ws://echo.websocket.org/").call(flow).materialized.map { message =>
       Json.parse(message.asTextMessage.getStrictText).as[JsObject]
     }
-    val jsonBody = Await.result(future, Duration(4, TimeUnit.SECONDS))
+    val jsonBody = future.await
     assert(Json.obj("hello" -> "world") == jsonBody.as[JsObject])
   }
 
@@ -464,7 +446,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
     val future = WS.websocketHost(s"ws://localhost:$port").addPathSegment("websocket").addPathSegment("Mathieu").call(flow).materialized.map { message =>
       Json.parse(message.asTextMessage.getStrictText).as[JsObject]
     }
-    val jsonBody = Await.result(future, Duration(4, TimeUnit.SECONDS))
+    val jsonBody = future.await
     assert(Json.obj("hello" -> "world") == (jsonBody \ "sourceMessage").asOpt[JsObject].getOrElse(Json.obj()))
     assert("Mathieu" == (jsonBody \ "resource").asOpt[String].getOrElse(""))
     assert((jsonBody \ "sent_at").asOpt[Long].isDefined)
@@ -477,7 +459,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
     val future = WS.websocketHost(s"ws://localhost:$port").addPathSegment("websocketping").call(flow).materialized.map  { message =>
       Json.parse(message.asTextMessage.getStrictText).as[JsObject]
     }
-    val jsonBody = Await.result(future, Duration(4, TimeUnit.SECONDS))
+    val jsonBody = future.await
     assert(Json.obj("hello" -> "world") == jsonBody.as[JsObject])
   }
 
@@ -486,8 +468,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
     val promise = Promise[Seq[Message]]
     val flow = ActorFlow.actorRef(out => WebSocketClientActor.props(out, promise))
     WS.websocketHost(s"ws://localhost:$port").addPathSegment("websocketping").callNoMat(flow)
-    val messages = Await.result(promise.future, Duration(4, TimeUnit.SECONDS)).map(_.asTextMessage.getStrictText)
-    System.out.println(messages.mkString(", "))
+    val messages = promise.future.await.map(_.asTextMessage.getStrictText)
     assert(Seq("chunk", "chunk", "chunk", "chunk", "chunk", "chunk", "chunk", "chunk", "chunk", "chunk") == messages)
   }
 
@@ -498,7 +479,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
     val future = WS.websocketHost(s"ws://localhost:$port").addPathSegment("websocketsimple").call(flow).materialized.map { message =>
       Json.parse(message.asTextMessage.getStrictText).as[JsObject]
     }
-    val jsonBody = Await.result(future, Duration(4, TimeUnit.SECONDS))
+    val jsonBody = future.await
     assert(Json.obj("msg" -> "Hello World!") == jsonBody.as[JsObject])
   }
 
