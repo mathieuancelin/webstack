@@ -20,7 +20,7 @@ case class WebSocketContext(state: Map[String, AnyRef], exchange: WebSocketHttpE
     if (key == null || value == null) {
       this
     } else {
-      WebSocketContext(state + ((key, value)), exchange, channel)
+      WebSocketContext(state + (key -> value), exchange, channel)
     }
   }
 
@@ -65,9 +65,11 @@ case class WebSocketRequestQueryParams(request: WebSocketHttpExchange) {
       var map = Map.empty[String, Seq[String]]
       s.split("&").toSeq.foreach { item =>
         val parts = item.split("=")
-        map.get(parts(0)) match {
-          case Some(vals) => map = map + ((parts(0), vals :+ parts(1)))
-          case None => map = map + ((parts(0), Seq(parts(1))))
+        if (parts.size == 2) {
+          map.get(parts(0)) match {
+            case Some(vals) => map = map + (parts(0) -> (vals :+ parts(1)))
+            case None => map = map + (parts(0) -> Seq(parts(1)))
+          }
         }
       }
       map

@@ -68,7 +68,7 @@ case class RequestContext(private val state: Map[String, AnyRef], private val un
 
   def setValue(key: String, value: AnyRef): RequestContext = {
     if (key == null || value == null) this
-    else RequestContext(state + ((key, value)), underlying, ec)
+    else RequestContext(state + (key -> value), underlying, ec)
   }
 
   def uri: String = exchange.getRequestURI
@@ -147,9 +147,9 @@ case class RequestBody(bodyAsBytes: ByteString) {
       val key: String = part.split("=")(0)
       val value: String = part.split("=")(1)
       if (!form.containsKey(key)) {
-        form = form + ((key, List.empty))
+        form = form + (key -> List.empty)
       }
-      form = form + ((key, form.get(key).get :+ value))
+      form = form + (key -> (form.get(key).get :+ value))
     }
     form
   }

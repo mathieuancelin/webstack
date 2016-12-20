@@ -124,12 +124,15 @@ case class Result(status: Int, source: Source[ByteString, _], contentType: Strin
 
   def as(contentType: String): Result = copy(contentType = contentType)
 
-  def withHeader(key: String, value: String): Result = {
+  def withHeader(header: (String, String)): Result = {
+    val (key, value) = header
     headers.get(key) match {
-      case Some(seq) => copy(headers = headers + ((key, seq :+ value)))
-      case None => copy(headers = headers + ((key , Seq(value))))
+      case Some(seq) => copy(headers = headers + (key -> (seq :+ value)))
+      case None => copy(headers = headers + (key -> Seq(value)))
     }
   }
+
+  // TODO : add session support
 
   def withStatus(status: Int): Result = copy(status = status)
 

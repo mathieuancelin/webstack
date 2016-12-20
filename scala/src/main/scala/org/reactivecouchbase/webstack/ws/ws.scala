@@ -50,12 +50,12 @@ case class WSResponse(underlying: HttpResponse) {
   import scala.collection.JavaConversions._
   for (header <- underlying.getHeaders) {
     if (!_headers.containsKey(header.name)) {
-      _headers = _headers + ((header.name, Seq.empty[String]))
+      _headers = _headers + (header.name -> Seq.empty[String])
     }
-    _headers = _headers + ((header.name, _headers.get(header.name).get :+ header.value))
+    _headers = _headers + (header.name -> (_headers.get(header.name).get :+ header.value))
   }
   
-  val headers = _headers + (("Content-Type", Seq(underlying.entity.getContentType.mediaType.toString)))
+  val headers = _headers + ("Content-Type" -> Seq(underlying.entity.getContentType.mediaType.toString))
 
   def status: Int = underlying.status.intValue
 
@@ -102,6 +102,7 @@ case class WSRequest(
   def addPathSegment(segment: String): WSRequest = copy(path = path + "/" + segment)
   def addPathSegment(path: Any): WSRequest = addPathSegment(path.toString)
   def withMethod(method: HttpMethod): WSRequest = copy(method = method)
+  def withMethod(method: String): WSRequest = copy(method = HttpMethods.getForKey(method).get)
   def withBody(body: Publisher[ByteString]): WSRequest = copy(body = Source.fromPublisher(body))
   def withBody(body: Source[ByteString, _]): WSRequest = copy(body = body)
   def withBody(body: Publisher[ByteString], ctype: ContentType): WSRequest = copy(body = Source.fromPublisher(body), contentType = ctype)
@@ -164,22 +165,24 @@ case class WSRequest(
 
   def withHeaders(headers: Map[String, Seq[String]]): WSRequest = copy(headers = headers)
 
-  def withHeader(name: String, value: String): WSRequest = {
+  def withHeader(header: (String, String)): WSRequest = {
+    val (name, value) = header
     val values = headers.get(name) match {
       case Some(vals) => vals :+ value
       case None => Seq(value)
     }
-    copy(headers = headers + ((name, values)))
+    copy(headers = headers + (name -> values))
   }
 
   def withQueryParams(queryString: Map[String, Seq[String]]): WSRequest = copy(queryParams = queryString)
 
-  def withQueryParam(name: String, value: Any): WSRequest = {
+  def withQueryParam(qparam: (String, Any)): WSRequest = {
+    val (name, value) = qparam
     val values = queryParams.get(name) match {
       case Some(vals) => vals :+ value.toString
       case None => Seq(value.toString)
     }
-    copy(queryParams = queryParams + ((name, values)))
+    copy(queryParams = queryParams + (name -> values))
   }
 
   def call()(implicit ec: ExecutionContext, materializer: Materializer): Future[WSResponse] = {
@@ -209,19 +212,21 @@ case class WebSocketClientRequest(host: String,
 
   def withHeaders(headers: Map[String, Seq[String]]): WebSocketClientRequest = copy(headers = headers)
 
-  def withHeader(name: String, value: String): WebSocketClientRequest = {
+  def withHeader(header: (String, String)): WebSocketClientRequest = {
+    val (name, value) = header
     headers.get(name) match {
-      case Some(vals) => copy(headers = headers + ((name, vals :+ value)))
-      case None => copy(headers = headers + ((name, Seq(value))))
+      case Some(vals) => copy(headers = headers + (name -> (vals :+ value)))
+      case None => copy(headers = headers + (name -> Seq(value)))
     }
   }
 
   def withQueryParams(queryParams: Map[String, Seq[String]]): WebSocketClientRequest = copy(queryParams = queryParams)
 
-  def withQueryParam(name: String, value: Any): WebSocketClientRequest = {
+  def withQueryParam(qparam: (String, Any)): WebSocketClientRequest = {
+    val (name, value) = qparam
     queryParams.get(name) match {
-      case Some(vals) => copy(queryParams = queryParams + ((name, vals :+ value.toString)))
-      case None => copy(queryParams = queryParams + ((name, Seq(value.toString))))
+      case Some(vals) => copy(queryParams = queryParams + (name -> (vals :+ value.toString)))
+      case None => copy(queryParams = queryParams + (name -> Seq(value.toString)))
     }
   }
 
