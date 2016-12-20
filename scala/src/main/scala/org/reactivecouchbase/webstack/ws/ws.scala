@@ -21,12 +21,13 @@ import scala.xml.{Elem, XML}
 
 object WS {
 
-  def host(host: String, port: Int = 80): WSRequest = {
+  def host(host: String, _port: Int = 80): WSRequest = {
+    val port = Option(host).map(_.replace("http://", "").replace("https://", "")).filter(_.contains(":")).map(_.split(":")(1).toInt).getOrElse(_port)
     if (host.startsWith("https")) {
-      val connectionFlow = Env.wsHttp.outgoingConnectionHttps(host.replace("http://", "").replace("https://", ""), port)
+      val connectionFlow = Env.wsHttp.outgoingConnectionHttps(host.replace(s":$port", "").replace("https://", ""), port)
       WSRequest(connectionFlow, host, port)
     } else {
-      val connectionFlow = Env.wsHttp.outgoingConnection(host.replace("http://", "").replace("https://", ""), port)
+      val connectionFlow = Env.wsHttp.outgoingConnection(host.replace(s":$port", "").replace("http://", ""), port)
       WSRequest(connectionFlow, host, port)
     }
   }
@@ -35,13 +36,13 @@ object WS {
 }
 
 case class WSBody(underlying: ByteString) {
-  val underlyingAsString = underlying.utf8String
+  private val underlyingAsString = underlying.utf8String
   def bytes: ByteString = underlying
-  def body: String = underlyingAsString
-  def json: JsValue = Json.parse(body)
+  def string: String = underlyingAsString
+  def json: JsValue = Json.parse(string)
   def safeJson: Try[JsValue] = Try(json)
   def safeXml: Try[Elem] = Try(xml)
-  def xml: Elem = XML.loadString(body)
+  def xml: Elem = XML.loadString(string)
 }
 
 case class WSResponse(underlying: HttpResponse) {

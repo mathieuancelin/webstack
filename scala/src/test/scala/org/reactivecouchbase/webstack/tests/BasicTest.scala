@@ -276,9 +276,12 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with simple text result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("sayhello").withHeader("Api-Key" -> "12345").call()
+      resp     <- WS.host(s"http://localhost:$port")
+                    .addPathSegment("sayhello")
+                    .withHeader("Api-Key" -> "12345")
+                    .call()
       body     <- resp.body
-    } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
+    } yield (body.string, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
     assert(status == 200)
     assert(body == "Hello World!\n")
@@ -287,9 +290,12 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with a huge text result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("huge").withHeader("Api-Key" -> "12345").call()
+      resp     <- WS.host(s"http://localhost:$port")
+                    .addPathSegment("huge")
+                    .withHeader("Api-Key" -> "12345")
+                    .call()
       body     <- resp.body
-    } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
+    } yield (body.string, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
     assert(status == 200)
     assert(body == MyController.HUGE_TEXT + "\n")
@@ -298,9 +304,11 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with a SSE result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("sse").call()
+      resp     <- WS.host(s"http://localhost:$port")
+                    .addPathSegment("sse")
+                    .call()
       body     <- resp.body
-    } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
+    } yield (body.string, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
     val slugs = body.split("\n").toSeq.filterNot(_.isEmpty).map(_.replace("data: ", "")).map(Json.parse(_).as[JsObject])
     val valid: Boolean = slugs.map(i => (i \ "value").asOpt[String].isDefined && (i \ "time").asOpt[Long].isDefined).foldLeft(true)(_ && _)
@@ -312,9 +320,11 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with a SSE result from an actor" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("sse").call()
+      resp     <- WS.host(s"http://localhost:$port")
+                    .addPathSegment("sse")
+                    .call()
       body     <- resp.body
-    } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
+    } yield (body.string, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
     val slugs = body.split("\n").toSeq.filterNot(_.isEmpty).map(_.replace("data: ", "")).map(Json.parse(_).as[JsObject])
     Env.logger.info(slugs.mkString(" - "))
@@ -327,9 +337,11 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with simple assets" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("assets").addPathSegment("test.txt").call()
+      resp     <- WS.host(s"http://localhost:$port")
+                    .addPathSegment("assets")
+                    .addPathSegment("test.txt").call()
       body     <- resp.body
-    } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
+    } yield (body.string, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
     assert(status == 200)
     assert(body == "Hello Test")
@@ -338,9 +350,13 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with a path param result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("hello").addPathSegment("Mathieu").withHeader("Api-Key" -> "12345").call()
+      resp     <- WS.host(s"http://localhost:$port")
+                    .addPathSegment("hello")
+                    .addPathSegment("Mathieu")
+                    .withHeader("Api-Key" -> "12345")
+                    .call()
       body     <- resp.body
-    } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
+    } yield (body.string, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
     assert(status == 200)
     assert(body == "Hello Mathieu!\n")
@@ -349,7 +365,10 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with simple json result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("json").withHeader("Api-Key" -> "12345").call()
+      resp     <- WS.host(s"http://localhost:$port")
+                    .addPathSegment("json")
+                    .withHeader("Api-Key" -> "12345")
+                    .call()
       body     <- resp.body
     } yield (body.json, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
@@ -360,9 +379,12 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with simple html result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("html").withHeader("Api-Key" -> "12345").call()
+      resp     <- WS.host(s"http://localhost:$port")
+                    .addPathSegment("html")
+                    .withHeader("Api-Key" -> "12345")
+                    .call()
       body     <- resp.body
-    } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
+    } yield (body.string, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
     assert(status == 200)
     assert(body == "<h1>Hello World!</h1>")
@@ -371,9 +393,13 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with simple template result" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("template").withQueryParam("who", "Billy").withHeader("Api-Key" -> "12345").call()
+      resp     <- WS.host(s"http://localhost:$port")
+                    .addPathSegment("template")
+                    .withQueryParam("who", "Billy")
+                    .withHeader("Api-Key" -> "12345")
+                    .call()
       body     <- resp.body
-    } yield (body.body, resp.status, resp.header("Content-Type").getOrElse("none"))
+    } yield (body.string, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
     assert(status == 200)
     assert(body == "<div><h1>Hello Billy!</h1></div>")
@@ -383,7 +409,7 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
   "Webstack" should "be able to respond to a post request" in {
     val uuid = UUID.randomUUID().toString
     val future = for {
-      resp     <- WS.host("http://localhost", port)
+      resp     <- WS.host(s"http://localhost:$port")
                     .addPathSegment("post")
                     .withMethod(HttpMethods.POST)
                     .withBody(Json.obj("uuid" -> uuid))
@@ -398,7 +424,9 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with WS json response" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("ws").call()
+      resp     <- WS.host(s"http://localhost:$port")
+                    .addPathSegment("ws")
+                    .call()
       body     <- resp.body
     } yield (body.json, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
@@ -413,7 +441,10 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   "Webstack" should "be able to respond with WS json response from query param" in {
     val future = for {
-      resp     <- WS.host("http://localhost", port).addPathSegment("ws").withQueryParam("q", "81.246.24.51").call()
+      resp     <- WS.host(s"http://localhost:$port")
+                    .addPathSegment("ws")
+                    .withQueryParam("q", "81.246.24.51")
+                    .call()
       body     <- resp.body
     } yield (body.json, resp.status, resp.header("Content-Type").getOrElse("none"))
     val (body, status, contentType) = future.await
@@ -443,7 +474,11 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
     val sink = Sink.head[Message]
     val source = jsonSource(Json.obj("hello" ->"world"), 100)
     val flow: Flow[Message, Message, Future[Message]] = Flow.fromSinkAndSourceMat(sink, source)(Keep.left[Future[Message], Cancellable])
-    val future = WS.websocketHost(s"ws://localhost:$port").addPathSegment("websocket").addPathSegment("Mathieu").call(flow).materialized.map { message =>
+    val future = WS.websocketHost(s"ws://localhost:$port")
+        .addPathSegment("websocket")
+        .addPathSegment("Mathieu")
+        .call(flow)
+        .materialized.map { message =>
       Json.parse(message.asTextMessage.getStrictText).as[JsObject]
     }
     val jsonBody = future.await
@@ -456,7 +491,11 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
     val sink = Sink.head[Message]
     val source = jsonSource(Json.obj("hello" ->"world"), 100)
     val flow: Flow[Message, Message, Future[Message]] = Flow.fromSinkAndSourceMat(sink, source)(Keep.left[Future[Message], Cancellable])
-    val future = WS.websocketHost(s"ws://localhost:$port").addPathSegment("websocketping").call(flow).materialized.map  { message =>
+    val future = WS.websocketHost(s"ws://localhost:$port")
+        .addPathSegment("websocketping")
+        .call(flow)
+        .materialized
+        .map  { message =>
       Json.parse(message.asTextMessage.getStrictText).as[JsObject]
     }
     val jsonBody = future.await
@@ -476,7 +515,11 @@ class BasicTestSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
     val sink = Sink.head[Message]
     val source = jsonSource(Json.obj("hello" ->"world"), 100)
     val flow: Flow[Message, Message, Future[Message]] = Flow.fromSinkAndSourceMat(sink, source)(Keep.left[Future[Message], Cancellable])
-    val future = WS.websocketHost(s"ws://localhost:$port").addPathSegment("websocketsimple").call(flow).materialized.map { message =>
+    val future = WS.websocketHost(s"ws://localhost:$port")
+        .addPathSegment("websocketsimple")
+        .call(flow)
+        .materialized
+        .map { message =>
       Json.parse(message.asTextMessage.getStrictText).as[JsObject]
     }
     val jsonBody = future.await
